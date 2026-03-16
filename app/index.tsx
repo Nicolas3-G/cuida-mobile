@@ -232,10 +232,12 @@ export default function HomeScreen() {
   const [snippets, setSnippets] = useState<Snippet[]>([]);
   const [summaryArticles, setSummaryArticles] = useState<any[]>([]);
   const [nationArticles, setNationArticles] = useState<any[]>([]);
+  const [localOrganizations, setLocalOrganizations] = useState<any[]>([]);
   const [expandedStoryIds, setExpandedStoryIds] = useState<Set<string>>(new Set());
   const [truncatableStoryIds, setTruncatableStoryIds] = useState<Set<string>>(new Set());
   const [isLoadingSnippets, setIsLoadingSnippets] = useState(true);
   const [isLoadingNation, setIsLoadingNation] = useState(true);
+  const [isLoadingOrgs, setIsLoadingOrgs] = useState(true);
   const [userState, setUserState] = useState('');
 
   // Modal state
@@ -286,8 +288,8 @@ export default function HomeScreen() {
         } else {
           setIsCheckingOnboarding(false);
           const stateCode = await AsyncStorage.getItem('userStateCode');
-          const stateName = await AsyncStorage.getItem('userLocation');
-          setUserState(stateName || stateCode || 'your area');
+          const savedLocation = await AsyncStorage.getItem('userLocation');
+          setUserState(savedLocation || stateCode || 'your area');
 
           console.log("Use Effect Running...", stateCode)
           if (stateCode) {
@@ -295,6 +297,13 @@ export default function HomeScreen() {
             fetchTargetingStatus(stateCode);
           } else {
             setIsLoadingSnippets(false);
+          }
+
+          // Fetch local organizations based on the user's saved city/location.
+          if (savedLocation) {
+            fetchLocalOrganizations(savedLocation);
+          } else {
+            setIsLoadingOrgs(false);
           }
         }
       } catch (error) {
@@ -402,6 +411,43 @@ export default function HomeScreen() {
         console.error('Error fetching nation topics:', error);
       } finally {
         setIsLoadingNation(false);
+      }
+    }
+
+    async function fetchLocalOrganizations(city: string) {
+      try {
+        const normalizedCity = city.trim().toLowerCase();
+        const orgsRef = collection(db, 'localOrganizations');
+        const q = query(orgsRef, where('city', '==', normalizedCity), limit(1));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          const data = querySnapshot.docs[0].data() as any;
+          if (data.organizations && Array.isArray(data.organizations)) {
+            const mapped = data.organizations.map((org: any, index: number) => {
+              const summary = org.summary || {};
+              const name = org.shortName || org.name || 'Local organization';
+              const desc = summary.shortSummary || summary.longSummary || '';
+
+              return {
+                id: org.id || `local-org-${index}`,
+                icon: org.icon || 'home-outline',
+                name,
+                scope: org.scope || 'Local',
+                scopeColor: '#2E7D32',
+                desc,
+                bg: '#E8F5E9',
+                border: '#A5D6A7',
+                url: org.url || org.website || null,
+              };
+            });
+            setLocalOrganizations(mapped);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching local organizations:', error);
+      } finally {
+        setIsLoadingOrgs(false);
       }
     }
 
@@ -581,117 +627,103 @@ export default function HomeScreen() {
           <Text style={{ color: '#4E342E', fontSize: 18, fontWeight: '700', paddingHorizontal: 20, marginBottom: 12 }}>
             Organizations
           </Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
-            scrollEventThrottle={16}
-            onScroll={(e) => {
-              const currentX = e.nativeEvent.contentOffset.x;
-              const index = Math.round(currentX / ORG_CARD_WIDTH);
-              if (index !== lastOrgIndex.current) {
-                triggerSelectionHaptic();
-                lastOrgIndex.current = index;
-              }
-            }}
-          >
-            {[
-              {
-                icon: 'bank-outline',
-                name: 'ACLU',
-                scope: 'Nationwide',
-                scopeColor: '#BF360C',
-                desc: 'Defends civil liberties and fights immigration rights abuses in court.',
-                bg: '#FBE9E7',
-                border: '#FFCCBC',
-                url: 'https://www.aclu.org/',
-              },
-              {
-                icon: 'scale-balance',
-                name: 'NILC',
-                scope: 'Nationwide',
-                scopeColor: '#BF360C',
-                desc: 'National Immigration Law Center — policy & legal defense for immigrants.',
-                bg: '#FBE9E7',
-                border: '#FFCCBC',
-                url: 'https://www.nilc.org/',
-              },
-              {
-                icon: 'handshake-outline',
-                name: 'UnidosUS',
-                scope: 'Nationwide',
-                scopeColor: '#BF360C',
-                desc: "The nation's largest Latino civil rights & advocacy organization.",
-                bg: '#FBE9E7',
-                border: '#FFCCBC',
-                url: 'https://unidosus.org/',
-              },
-              {
-                icon: 'book-open-page-variant-outline',
-                name: 'ILRC',
-                scope: 'Nationwide',
-                scopeColor: '#BF360C',
-                desc: 'Immigrant Legal Resource Center — legal training & educational materials.',
-                bg: '#FBE9E7',
-                border: '#FFCCBC',
-                url: 'https://www.ilrc.org/',
-              },
-              {
-                icon: 'home-outline',
-                name: 'Local Legal Aid',
-                scope: 'Local',
-                scopeColor: '#2E7D32',
-                desc: 'Free immigration legal services for low-income residents in your area.',
-                bg: '#E8F5E9',
-                border: '#A5D6A7',
-                url: 'https://www.lawhelp.org/',
-              },
-              {
-                icon: 'web',
-                name: 'Comunidades Unidas',
-                scope: 'Local',
-                scopeColor: '#2E7D32',
-                desc: 'Community-led organization supporting immigrant families nearby.',
-                bg: '#E8F5E9',
-                border: '#A5D6A7',
-                url: 'https://www.cuutah.org/',
-              },
-              {
-                icon: 'bullhorn-outline',
-                name: 'Rapid Response Network',
-                scope: 'Local',
-                scopeColor: '#2E7D32',
-                desc: 'Volunteer-run network that responds to enforcement activity in real time.',
-                bg: '#E8F5E9',
-                border: '#A5D6A7',
-                url: 'https://www.pichr.org/rapid-response',
-              },
-            ].map((org) => (
-              <TouchableOpacity
-                key={org.name}
-                activeOpacity={0.7}
-                onPress={() => {
-                  triggerHaptic();
-                  Linking.openURL(org.url);
-                }}
-                style={{ width: 190, backgroundColor: org.bg, borderWidth: 1, borderColor: org.border, borderRadius: 16, padding: 14 }}
-              >
-                {/* Scope badge — top-right */}
-                <View style={{ position: 'absolute', top: 10, right: 10, backgroundColor: org.scopeColor, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 }}>
-                  <Text style={{ color: '#fff', fontSize: 9, fontWeight: '700' }}>{org.scope.toUpperCase()}</Text>
-                </View>
+          {isLoadingOrgs ? (
+            <ActivityIndicator color="#C2185B" style={{ marginVertical: 10 }} />
+          ) : (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
+              scrollEventThrottle={16}
+              onScroll={(e) => {
+                const currentX = e.nativeEvent.contentOffset.x;
+                const index = Math.round(currentX / ORG_CARD_WIDTH);
+                if (index !== lastOrgIndex.current) {
+                  triggerSelectionHaptic();
+                  lastOrgIndex.current = index;
+                }
+              }}
+            >
+              {(() => {
+                const nationalOrgs = [
+                  {
+                  icon: 'bank-outline',
+                  name: 'ACLU',
+                  scope: 'Nationwide',
+                  scopeColor: '#BF360C',
+                  desc: 'Defends civil liberties and fights immigration rights abuses in court.',
+                  bg: '#FBE9E7',
+                  border: '#FFCCBC',
+                  url: 'https://www.aclu.org/',
+                  },
+                  {
+                  icon: 'scale-balance',
+                  name: 'NILC',
+                  scope: 'Nationwide',
+                  scopeColor: '#BF360C',
+                  desc: 'National Immigration Law Center — policy & legal defense for immigrants.',
+                  bg: '#FBE9E7',
+                  border: '#FFCCBC',
+                  url: 'https://www.nilc.org/',
+                  },
+                  {
+                  icon: 'handshake-outline',
+                  name: 'UnidosUS',
+                  scope: 'Nationwide',
+                  scopeColor: '#BF360C',
+                  desc: "The nation's largest Latino civil rights & advocacy organization.",
+                  bg: '#FBE9E7',
+                  border: '#FFCCBC',
+                  url: 'https://unidosus.org/',
+                  },
+                  {
+                  icon: 'book-open-page-variant-outline',
+                  name: 'ILRC',
+                  scope: 'Nationwide',
+                  scopeColor: '#BF360C',
+                  desc: 'Immigrant Legal Resource Center — legal training & educational materials.',
+                  bg: '#FBE9E7',
+                  border: '#FFCCBC',
+                  url: 'https://www.ilrc.org/',
+                  },
+                ];
 
-                <MaterialCommunityIcons name={org.icon as any} size={26} color={org.scopeColor} style={{ marginBottom: 8 }} />
-                <Text style={{ color: '#4E342E', fontSize: 14, fontWeight: '700', marginBottom: 6, paddingRight: 60 }}>{org.name}</Text>
-                <Text style={{ color: '#6D4C41', fontSize: 12, lineHeight: 17, marginBottom: 8 }}>{org.desc}</Text>
+                const interleaved: any[] = [];
+                const maxLen = Math.max(localOrganizations.length, nationalOrgs.length);
+                for (let i = 0; i < maxLen; i++) {
+                  if (i < localOrganizations.length) interleaved.push(localOrganizations[i]);
+                  if (i < nationalOrgs.length) interleaved.push(nationalOrgs[i]);
+                }
 
-                {/* Bottom-right arrow indicator */}
-                <View style={{ position: 'absolute', bottom: 12, right: 12 }}>
-                  <MaterialCommunityIcons name="chevron-right" size={18} color={org.scopeColor} />
-                </View>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+                return interleaved;
+              })().map((org) => (
+                <TouchableOpacity
+                  key={org.id || org.name}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    if (!org.url) return;
+                    triggerHaptic();
+                    Linking.openURL(org.url);
+                  }}
+                  style={{ width: 190, backgroundColor: org.bg, borderWidth: 1, borderColor: org.border, borderRadius: 16, padding: 14 }}
+                >
+                  {/* Scope badge — top-right */}
+                  <View style={{ position: 'absolute', top: 10, right: 10, backgroundColor: org.scopeColor, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 }}>
+                    <Text style={{ color: '#fff', fontSize: 9, fontWeight: '700' }}>{org.scope.toUpperCase()}</Text>
+                  </View>
+
+                  <MaterialCommunityIcons name={org.icon as any} size={26} color={org.scopeColor} style={{ marginBottom: 8 }} />
+                  <Text style={{ color: '#4E342E', fontSize: 14, fontWeight: '700', marginBottom: 6, paddingRight: 60 }}>{org.name}</Text>
+                  <Text style={{ color: '#6D4C41', fontSize: 12, lineHeight: 17, marginBottom: 8 }}>{org.desc}</Text>
+
+                  {/* Bottom-right arrow indicator */}
+                  <View style={{ position: 'absolute', bottom: 12, right: 12 }}>
+                    <MaterialCommunityIcons name="chevron-right" size={18} color={org.scopeColor} />
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
         </View>
 
         <TouchableOpacity
