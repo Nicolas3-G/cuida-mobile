@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator, Linking, Animated, Pressable } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -15,49 +15,6 @@ import KnowYourRightsCTA from '../components/KnowYourRightsCTA';
 import DailySummarySection from '../components/DailySummarySection';
 import ActivityNearYouSection from '../components/ActivityNearYouSection';
 
-const NEWS_STORIES = [
-  {
-    id: '1',
-    category: 'Alert',
-    title: 'ICE checkpoint reported near Central Ave',
-    location: 'Central Ave, 0.4 mi away',
-    color: '#C62828',
-    icon: 'alert-outline',
-  },
-  {
-    id: '2',
-    category: 'Know Your Rights',
-    title: 'You have the right to remain silent — here\'s what to say',
-    location: 'Tap to read',
-    color: '#6A1B9A',
-    icon: 'scale-balance',
-  },
-  {
-    id: '3',
-    category: 'Operation Report',
-    title: 'Increased enforcement spotted near Eastside Market',
-    location: 'Eastside, 1.1 mi away',
-    color: '#E65100',
-    icon: 'clipboard-text-outline',
-  },
-  {
-    id: '4',
-    category: 'Get Involved',
-    title: 'Community rapid response network meeting this Friday',
-    location: 'Community Center, 0.6 mi away',
-    color: '#2E7D32',
-    icon: 'hand-front-right',
-  },
-  {
-    id: '5',
-    category: 'Resource',
-    title: 'Free legal consultations — immigration attorneys on call',
-    location: 'Legal Aid Office, 1.8 mi away',
-    color: '#00897B',
-    icon: 'phone-outline',
-  },
-];
-
 interface Article {
   title: string;
   formattedTitle?: string;
@@ -71,167 +28,6 @@ interface Snippet {
   snippetText: string;
   articles?: Article[];
 }
-
-interface AnimatedNewsCardProps {
-  story: any;
-  isExpanded: boolean;
-  isTruncatable: boolean;
-  onToggleExpand: (id: string) => void;
-  onTextLayout: (event: any, id: string) => void;
-  vibrationEnabled: boolean;
-}
-
-const AnimatedNewsCard = ({ story, isExpanded, isTruncatable, onToggleExpand, onTextLayout, vibrationEnabled }: AnimatedNewsCardProps) => {
-  const scaleValue = useRef(new Animated.Value(1)).current;
-
-  const triggerHaptic = () => {
-    if (vibrationEnabled) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-  };
-
-  const handlePressIn = () => {
-    Animated.spring(scaleValue, {
-      toValue: 0.96,
-      useNativeDriver: true,
-      tension: 100,
-      friction: 10,
-    }).start();
-  };
-
-  const handlePressOut = () => {
-    Animated.spring(scaleValue, {
-      toValue: 1,
-      useNativeDriver: true,
-      tension: 100,
-      friction: 10,
-    }).start();
-  };
-
-  return (
-    <Animated.View
-      style={{
-        transform: [{ scale: scaleValue }],
-        backgroundColor: story.color,
-        width: 220,
-        minHeight: 120,
-        borderRadius: 16,
-        overflow: 'hidden',
-      }}
-    >
-      <Pressable
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        onPress={() => {
-          triggerHaptic();
-          story.link && Linking.openURL(story.link);
-        }}
-        style={({ pressed }) => ({
-          flexGrow: 1,
-          opacity: pressed ? 0.95 : 1,
-        })}
-      >
-
-        <View style={{ padding: 12, flex: 1, justifyContent: 'space-between' }}>
-          <View>
-            <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: 10, fontWeight: '600', textTransform: 'uppercase', marginBottom: 4 }}>
-              {story.category}
-            </Text>
-
-            <Text
-              style={{ position: 'absolute', opacity: 0, fontSize: 13, fontWeight: '700', lineHeight: 18, width: 220 - 24 }}
-              onTextLayout={(e) => onTextLayout(e, story.id)}
-            >
-              {story.title}
-            </Text>
-
-            <Text
-              style={{ color: '#ffffff', fontSize: 13, fontWeight: '700', lineHeight: 18, marginBottom: 2 }}
-              numberOfLines={isExpanded ? undefined : 3}
-            >
-              {story.title}
-            </Text>
-
-            {(isTruncatable || isExpanded) && (
-              <TouchableOpacity
-                onPress={() => {
-                  triggerHaptic();
-                  onToggleExpand(story.id);
-                }}
-                style={{ alignSelf: 'flex-start', marginBottom: 6 }}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 11, fontWeight: '600', textDecorationLine: 'underline' }}>
-                  {isExpanded ? 'Show less' : 'More'}
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-            <MaterialCommunityIcons name="map-marker-outline" size={13} color="rgba(255,255,255,0.65)" style={{ marginRight: 3 }} />
-            <Text style={{ color: 'rgba(255,255,255,0.65)', fontSize: 11 }}>
-              {story.location}
-            </Text>
-          </View>
-        </View>
-      </Pressable>
-    </Animated.View>
-  );
-};
-
-interface AnimatedSummaryItemProps {
-  snippet: Snippet;
-  index: number;
-  onOpenArticles: (snippet: Snippet) => void;
-}
-
-const AnimatedSummaryItem = ({ snippet, index, onOpenArticles }: AnimatedSummaryItemProps) => {
-  const slideAnim = useRef(new Animated.Value(50)).current; // Start 50px to the right
-  const fadeAnim = useRef(new Animated.Value(0)).current;  // Start invisible
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 500,
-        delay: index * 150, // Staggered delay
-        useNativeDriver: true,
-      }),
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 500,
-        delay: index * 150,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, []);
-
-  return (
-    <Animated.View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        marginBottom: 16,
-        opacity: fadeAnim,
-        transform: [{ translateX: slideAnim }],
-      }}
-    >
-      <MaterialCommunityIcons name="circle-small" size={20} color="#F57C00" style={{ marginRight: 6, marginTop: 1 }} />
-      <View style={{ flex: 1, borderLeftWidth: 2, borderLeftColor: '#F57C00', paddingLeft: 10 }}>
-        <Text style={{ color: '#5D4037', fontSize: 13, lineHeight: 19, marginBottom: 6 }}>{snippet.snippetText}</Text>
-        {snippet.articles && snippet.articles.length > 0 && (
-          <TouchableOpacity
-            onPress={() => onOpenArticles(snippet)}
-            style={{ alignSelf: 'flex-start', backgroundColor: '#FFF8E1', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 }}
-          >
-            <Text style={{ color: '#E65100', fontSize: 11, fontWeight: '600' }}>More ›</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    </Animated.View>
-  );
-};
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -261,7 +57,6 @@ export default function HomeScreen() {
   const lastNewsIndex = useRef(0);
   const lastOrgIndex = useRef(0);
   const lastEventIndex = useRef(0);
-  const NEWS_CARD_WIDTH = 232; // 220 + 12 gap
   const ORG_CARD_WIDTH = 202;  // 190 + 12 gap
 
   // Load vibration setting when focused
@@ -573,13 +368,10 @@ export default function HomeScreen() {
 
         {/* ── Activity Near You ── */}
         <ActivityNearYouSection
-          NEWS_CARD_WIDTH={NEWS_CARD_WIDTH}
           lastNewsIndex={lastNewsIndex}
           triggerSelectionHaptic={triggerSelectionHaptic}
           nationArticles={nationArticles}
           summaryArticles={summaryArticles}
-          NEWS_STORIES={NEWS_STORIES}
-          AnimatedNewsCard={AnimatedNewsCard}
           expandedStoryIds={expandedStoryIds}
           truncatableStoryIds={truncatableStoryIds}
           toggleExpand={toggleExpand}
@@ -593,7 +385,6 @@ export default function HomeScreen() {
           targetingStatus={targetingStatus}
           isLoadingSnippets={isLoadingSnippets}
           snippets={snippets}
-          AnimatedSummaryItem={AnimatedSummaryItem}
           openArticles={openArticles}
         />
 
