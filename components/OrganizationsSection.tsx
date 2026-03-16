@@ -18,7 +18,6 @@ interface OrganizationsSectionProps {
   isLoadingOrgs: boolean;
   localOrganizations: Organization[];
   lastOrgIndex: MutableRefObject<number>;
-  ORG_CARD_WIDTH: number;
   triggerSelectionHaptic: () => void;
 }
 
@@ -26,9 +25,10 @@ const OrganizationsSection = ({
   isLoadingOrgs,
   localOrganizations,
   lastOrgIndex,
-  ORG_CARD_WIDTH,
   triggerSelectionHaptic,
 }: OrganizationsSectionProps) => {
+  const ORG_CARD_WIDTH = 202; // 190 + 12 gap
+
   return (
     <View style={{ marginBottom: 20 }}>
       <Text style={{ color: '#4E342E', fontSize: 18, fontWeight: '700', paddingHorizontal: 20, marginBottom: 12 }}>

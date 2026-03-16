@@ -1,5 +1,5 @@
-import React from 'react';
-import { ActivityIndicator, Text, View } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { ActivityIndicator, Text, View, Animated, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 interface Snippet {
@@ -7,16 +7,64 @@ interface Snippet {
   articles?: any[];
 }
 
+interface AnimatedSummaryItemProps {
+  snippet: Snippet;
+  index: number;
+  onOpenArticles: (snippet: Snippet) => void;
+}
+
+const AnimatedSummaryItem = ({ snippet, index, onOpenArticles }: AnimatedSummaryItemProps) => {
+  const slideAnim = useRef(new Animated.Value(50)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 500,
+        delay: index * 150,
+        useNativeDriver: true,
+      }),
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        delay: index * 150,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  return (
+    <Animated.View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        marginBottom: 16,
+        opacity: fadeAnim,
+        transform: [{ translateX: slideAnim }],
+      }}
+    >
+      <MaterialCommunityIcons name="circle-small" size={20} color="#F57C00" style={{ marginRight: 6, marginTop: 1 }} />
+      <View style={{ flex: 1, borderLeftWidth: 2, borderLeftColor: '#F57C00', paddingLeft: 10 }}>
+        <Text style={{ color: '#5D4037', fontSize: 13, lineHeight: 19, marginBottom: 6 }}>{snippet.snippetText}</Text>
+        {snippet.articles && snippet.articles.length > 0 && (
+          <TouchableOpacity
+            onPress={() => onOpenArticles(snippet)}
+            style={{ alignSelf: 'flex-start', backgroundColor: '#FFF8E1', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 }}
+          >
+            <Text style={{ color: '#E65100', fontSize: 11, fontWeight: '600' }}>More ›</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    </Animated.View>
+  );
+};
+
 interface DailySummarySectionProps {
   userState: string;
   targetingStatus: number;
   isLoadingSnippets: boolean;
   snippets: Snippet[];
-  AnimatedSummaryItem: React.ComponentType<{
-    snippet: Snippet;
-    index: number;
-    onOpenArticles: (snippet: Snippet) => void;
-  }>;
   openArticles: (snippet: Snippet) => void;
 }
 
@@ -25,7 +73,6 @@ const DailySummarySection = ({
   targetingStatus,
   isLoadingSnippets,
   snippets,
-  AnimatedSummaryItem,
   openArticles,
 }: DailySummarySectionProps) => {
   return (
