@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator, Modal, Linking, Animated, Pressable } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator, Linking, Animated, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -7,6 +7,13 @@ import { collection, query, where, orderBy, limit, getDocs } from 'firebase/fire
 import { db } from '../firebase';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import GetOrganizedSection from '../components/GetOrganizedSection';
+import OrganizationsSection from '../components/OrganizationsSection';
+import ArticlesListModal from '../components/ArticlesListModal';
+import VolunteerCTA from '../components/VolunteerCTA';
+import KnowYourRightsCTA from '../components/KnowYourRightsCTA';
+import DailySummarySection from '../components/DailySummarySection';
+import ActivityNearYouSection from '../components/ActivityNearYouSection';
 
 const NEWS_STORIES = [
   {
@@ -233,11 +240,13 @@ export default function HomeScreen() {
   const [summaryArticles, setSummaryArticles] = useState<any[]>([]);
   const [nationArticles, setNationArticles] = useState<any[]>([]);
   const [localOrganizations, setLocalOrganizations] = useState<any[]>([]);
+  const [localEvents, setLocalEvents] = useState<any[]>([]);
   const [expandedStoryIds, setExpandedStoryIds] = useState<Set<string>>(new Set());
   const [truncatableStoryIds, setTruncatableStoryIds] = useState<Set<string>>(new Set());
   const [isLoadingSnippets, setIsLoadingSnippets] = useState(true);
   const [isLoadingNation, setIsLoadingNation] = useState(true);
   const [isLoadingOrgs, setIsLoadingOrgs] = useState(true);
+  const [isLoadingEvents, setIsLoadingEvents] = useState(true);
   const [userState, setUserState] = useState('');
 
   // Modal state
@@ -254,7 +263,6 @@ export default function HomeScreen() {
   const lastEventIndex = useRef(0);
   const NEWS_CARD_WIDTH = 232; // 220 + 12 gap
   const ORG_CARD_WIDTH = 202;  // 190 + 12 gap
-  const EVENT_CARD_WIDTH = 222; // 210 + 12 gap
 
   // Load vibration setting when focused
   useFocusEffect(
@@ -302,8 +310,10 @@ export default function HomeScreen() {
           // Fetch local organizations based on the user's saved city/location.
           if (savedLocation) {
             fetchLocalOrganizations(savedLocation);
+            fetchLocalEvents(savedLocation);
           } else {
             setIsLoadingOrgs(false);
+            setIsLoadingEvents(false);
           }
         }
       } catch (error) {
@@ -414,6 +424,54 @@ export default function HomeScreen() {
       }
     }
 
+    async function fetchLocalEvents(city: string) {
+      try {
+        const normalizedCity = city.trim().toLowerCase();
+        const eventsRef = collection(db, 'localEvents');
+        const q = query(eventsRef, where('city', '==', normalizedCity), limit(1));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          const data = querySnapshot.docs[0].data() as any;
+          if (data.events && Array.isArray(data.events)) {
+            const mapped = data.events.map((event: any, index: number) => {
+              const summary = event.summary || {};
+              const title = event.shortName || event.name || 'Community event';
+              const dateLabel =
+                event.date && event.startTime
+                  ? `${event.date} · ${event.startTime}${event.endTime ? `–${event.endTime}` : ''}`
+                  : event.date || '';
+              const location =
+                event.venue ||
+                event.address ||
+                event.location ||
+                normalizedCity;
+
+              return {
+                id: event.id || `local-event-${index}`,
+                icon: event.icon || 'hand-front-right',
+                title,
+                date: dateLabel,
+                location,
+                distance: event.venueType === 'virtual' ? 'Online' : 'Nearby',
+                attendees: event.attendees || 0,
+                color: '#2E7D32',
+                bg: '#E8F5E9',
+                border: '#A5D6A7',
+                url: event.url || null,
+                description: summary.shortSummary || summary.longSummary || '',
+              };
+            });
+            setLocalEvents(mapped);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching local events:', error);
+      } finally {
+        setIsLoadingEvents(false);
+      }
+    }
+
     async function fetchLocalOrganizations(city: string) {
       try {
         const normalizedCity = city.trim().toLowerCase();
@@ -514,349 +572,53 @@ export default function HomeScreen() {
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
 
         {/* ── Activity Near You ── */}
-        <View className="mt-4 mb-6">
-          <Text className="text-slate-800 text-lg font-bold px-5 mb-3">
-            Activity near you
-          </Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
-            scrollEventThrottle={16}
-            onScroll={(e) => {
-              const currentX = e.nativeEvent.contentOffset.x;
-              const index = Math.round(currentX / NEWS_CARD_WIDTH);
-              if (index !== lastNewsIndex.current) {
-                triggerSelectionHaptic();
-                lastNewsIndex.current = index;
-              }
-            }}
-          >
-            {(() => {
-              const interleaved = [];
-              const maxLen = Math.max(nationArticles.length, summaryArticles.length);
-              for (let i = 0; i < maxLen; i++) {
-                if (i < nationArticles.length) interleaved.push(nationArticles[i]);
-                if (i < summaryArticles.length) interleaved.push(summaryArticles[i]);
-              }
-              return [...interleaved, ...NEWS_STORIES];
-            })().map((story) => (
-              <AnimatedNewsCard
-                key={story.id}
-                story={story}
-                isExpanded={expandedStoryIds.has(story.id)}
-                isTruncatable={truncatableStoryIds.has(story.id)}
-                onToggleExpand={toggleExpand}
-                onTextLayout={handleTextLayout}
-                vibrationEnabled={vibrationEnabled}
-              />
-            ))}
-
-
-          </ScrollView>
-
-        </View>
+        <ActivityNearYouSection
+          NEWS_CARD_WIDTH={NEWS_CARD_WIDTH}
+          lastNewsIndex={lastNewsIndex}
+          triggerSelectionHaptic={triggerSelectionHaptic}
+          nationArticles={nationArticles}
+          summaryArticles={summaryArticles}
+          NEWS_STORIES={NEWS_STORIES}
+          AnimatedNewsCard={AnimatedNewsCard}
+          expandedStoryIds={expandedStoryIds}
+          truncatableStoryIds={truncatableStoryIds}
+          toggleExpand={toggleExpand}
+          handleTextLayout={handleTextLayout}
+          vibrationEnabled={vibrationEnabled}
+        />
 
         {/* ── Daily Summary ── */}
-        <View style={{ marginHorizontal: 20, marginBottom: 20, backgroundColor: '#fff6e8', borderRadius: 16, padding: 20, borderWidth: 1, borderColor: '#D7CCC8', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}>
-            <Text style={{ fontSize: 18, fontWeight: '700', color: '#4E342E' }}>Summary for {userState}</Text>
-            <View style={{ marginLeft: 8, backgroundColor: '#FFEBEE', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2 }}>
-              <Text style={{ color: '#C62828', fontSize: 11, fontWeight: '700' }}>LIVE</Text>
-            </View>
-          </View>
-
-          {targetingStatus === 1 && (
-            <View style={{ backgroundColor: '#FFF9C4', borderRadius: 10, padding: 12, marginBottom: 16, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#FFF59D' }}>
-              <MaterialCommunityIcons name="alert-outline" size={18} color="#F57F17" style={{ marginRight: 10 }} />
-              <Text style={{ color: '#E65100', fontSize: 13, fontWeight: '700', flex: 1 }}>
-                Increased enforcement expected soon in {userState}
-              </Text>
-            </View>
-          )}
-
-          {targetingStatus === 2 && (
-            <View style={{ backgroundColor: '#dc2626', borderRadius: 10, padding: 12, marginBottom: 16, flexDirection: 'row', alignItems: 'center' }}>
-              <MaterialCommunityIcons name="alert-outline" size={18} color="#ffffff" style={{ marginRight: 10 }} />
-              <Text style={{ color: '#ffffff', fontSize: 14, fontWeight: '700', flex: 1 }}>
-                Increased enforcement targeting {userState}
-              </Text>
-            </View>
-          )}
-
-          {isLoadingSnippets ? (
-            <ActivityIndicator color="#C2185B" style={{ marginVertical: 20 }} />
-          ) : snippets.length > 0 ? (
-            snippets.map((snippet, i) => (
-              <AnimatedSummaryItem
-                key={i}
-                snippet={snippet}
-                index={i}
-                onOpenArticles={openArticles}
-              />
-            ))
-          ) : (
-            <Text style={{ color: '#6D4C41', fontSize: 13, textAlign: 'center', marginVertical: 10 }}>
-              No recent alerts for {userState}.
-            </Text>
-          )}
-        </View>
+        <DailySummarySection
+          userState={userState}
+          targetingStatus={targetingStatus}
+          isLoadingSnippets={isLoadingSnippets}
+          snippets={snippets}
+          AnimatedSummaryItem={AnimatedSummaryItem}
+          openArticles={openArticles}
+        />
 
         {/* ── Know Your Rights CTA ── */}
-        <TouchableOpacity
-          onPress={() => router.push('/know-your-rights')}
-          activeOpacity={0.85}
-          style={{ marginHorizontal: 20, marginBottom: 20, backgroundColor: '#6A1B9A', borderRadius: 16, padding: 20, flexDirection: 'row', alignItems: 'center' }}
-        >
-          <View style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.2)', justifyContent: 'center', alignItems: 'center', marginRight: 16 }}>
-            <MaterialCommunityIcons name="scale-balance" size={26} color="#ffffff" />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: '#ffffff', fontSize: 16, fontWeight: '700', marginBottom: 4 }}>
-              Know Your Rights
-            </Text>
-            <Text style={{ color: '#CE93D8', fontSize: 13, lineHeight: 18 }}>
-              Tap here to learn what to do when confronted by immigration officials.
-            </Text>
-          </View>
-          <Text style={{ color: '#CE93D8', fontSize: 20, marginLeft: 8 }}>›</Text>
-        </TouchableOpacity>
+        <KnowYourRightsCTA onPress={() => router.push('/know-your-rights')} />
 
         {/* ── Organizations ── */}
-        <View style={{ marginBottom: 20 }}>
-          <Text style={{ color: '#4E342E', fontSize: 18, fontWeight: '700', paddingHorizontal: 20, marginBottom: 12 }}>
-            Organizations
-          </Text>
-          {isLoadingOrgs ? (
-            <ActivityIndicator color="#C2185B" style={{ marginVertical: 10 }} />
-          ) : (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
-              scrollEventThrottle={16}
-              onScroll={(e) => {
-                const currentX = e.nativeEvent.contentOffset.x;
-                const index = Math.round(currentX / ORG_CARD_WIDTH);
-                if (index !== lastOrgIndex.current) {
-                  triggerSelectionHaptic();
-                  lastOrgIndex.current = index;
-                }
-              }}
-            >
-              {(() => {
-                const nationalOrgs = [
-                  {
-                  icon: 'bank-outline',
-                  name: 'ACLU',
-                  scope: 'Nationwide',
-                  scopeColor: '#BF360C',
-                  desc: 'Defends civil liberties and fights immigration rights abuses in court.',
-                  bg: '#FBE9E7',
-                  border: '#FFCCBC',
-                  url: 'https://www.aclu.org/',
-                  },
-                  {
-                  icon: 'scale-balance',
-                  name: 'NILC',
-                  scope: 'Nationwide',
-                  scopeColor: '#BF360C',
-                  desc: 'National Immigration Law Center — policy & legal defense for immigrants.',
-                  bg: '#FBE9E7',
-                  border: '#FFCCBC',
-                  url: 'https://www.nilc.org/',
-                  },
-                  {
-                  icon: 'handshake-outline',
-                  name: 'UnidosUS',
-                  scope: 'Nationwide',
-                  scopeColor: '#BF360C',
-                  desc: "The nation's largest Latino civil rights & advocacy organization.",
-                  bg: '#FBE9E7',
-                  border: '#FFCCBC',
-                  url: 'https://unidosus.org/',
-                  },
-                  {
-                  icon: 'book-open-page-variant-outline',
-                  name: 'ILRC',
-                  scope: 'Nationwide',
-                  scopeColor: '#BF360C',
-                  desc: 'Immigrant Legal Resource Center — legal training & educational materials.',
-                  bg: '#FBE9E7',
-                  border: '#FFCCBC',
-                  url: 'https://www.ilrc.org/',
-                  },
-                ];
+        <OrganizationsSection
+          isLoadingOrgs={isLoadingOrgs}
+          localOrganizations={localOrganizations}
+          lastOrgIndex={lastOrgIndex}
+          ORG_CARD_WIDTH={ORG_CARD_WIDTH}
+          triggerSelectionHaptic={triggerSelectionHaptic}
+        />
 
-                const interleaved: any[] = [];
-                const maxLen = Math.max(localOrganizations.length, nationalOrgs.length);
-                for (let i = 0; i < maxLen; i++) {
-                  if (i < localOrganizations.length) interleaved.push(localOrganizations[i]);
-                  if (i < nationalOrgs.length) interleaved.push(nationalOrgs[i]);
-                }
-
-                return interleaved;
-              })().map((org) => (
-                <TouchableOpacity
-                  key={org.id || org.name}
-                  activeOpacity={0.7}
-                  onPress={() => {
-                    if (!org.url) return;
-                    triggerHaptic();
-                    Linking.openURL(org.url);
-                  }}
-                  style={{ width: 190, backgroundColor: org.bg, borderWidth: 1, borderColor: org.border, borderRadius: 16, padding: 14 }}
-                >
-                  {/* Scope badge — top-right */}
-                  <View style={{ position: 'absolute', top: 10, right: 10, backgroundColor: org.scopeColor, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 }}>
-                    <Text style={{ color: '#fff', fontSize: 9, fontWeight: '700' }}>{org.scope.toUpperCase()}</Text>
-                  </View>
-
-                  <MaterialCommunityIcons name={org.icon as any} size={26} color={org.scopeColor} style={{ marginBottom: 8 }} />
-                  <Text style={{ color: '#4E342E', fontSize: 14, fontWeight: '700', marginBottom: 6, paddingRight: 60 }}>{org.name}</Text>
-                  <Text style={{ color: '#6D4C41', fontSize: 12, lineHeight: 17, marginBottom: 8 }}>{org.desc}</Text>
-
-                  {/* Bottom-right arrow indicator */}
-                  <View style={{ position: 'absolute', bottom: 12, right: 12 }}>
-                    <MaterialCommunityIcons name="chevron-right" size={18} color={org.scopeColor} />
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          )}
-        </View>
-
-        <TouchableOpacity
-          activeOpacity={0.85}
-          onPress={() => router.push('/volunteer')}
-          style={{ marginHorizontal: 20, marginBottom: 20, backgroundColor: '#2E7D32', borderRadius: 16, padding: 20, flexDirection: 'row', alignItems: 'center' }}
-        >
-          <View style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.2)', justifyContent: 'center', alignItems: 'center', marginRight: 16 }}>
-            <MaterialCommunityIcons name="handshake-outline" size={26} color="#ffffff" />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: '#ffffff', fontSize: 16, fontWeight: '700', marginBottom: 4 }}>
-              Volunteer
-            </Text>
-            <Text style={{ color: '#A5D6A7', fontSize: 13, lineHeight: 18 }}>
-              Find organizations that need help or join our list to be contacted!
-            </Text>
-          </View>
-          <Text style={{ color: '#A5D6A7', fontSize: 20, marginLeft: 8 }}>›</Text>
-        </TouchableOpacity>
+        {/* ── Volunteer CTA ── */}
+        <VolunteerCTA onPress={() => router.push('/volunteer')} />
 
         {/* ── Get Organized ── */}
-        <View style={{ marginBottom: 20 }}>
-          <Text style={{ color: '#4E342E', fontSize: 18, fontWeight: '700', paddingHorizontal: 20, marginBottom: 4 }}>
-            Get Organized
-          </Text>
-          <Text style={{ color: '#6D4C41', fontSize: 13, paddingHorizontal: 20, marginBottom: 12 }}>
-            Protests & actions happening near you
-          </Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
-            scrollEventThrottle={16}
-            onScroll={(e) => {
-              const currentX = e.nativeEvent.contentOffset.x;
-              const index = Math.round(currentX / EVENT_CARD_WIDTH);
-              if (index !== lastEventIndex.current) {
-                triggerSelectionHaptic();
-                lastEventIndex.current = index;
-              }
-            }}
-          >
-            {[
-              {
-                icon: 'hand-front-right',
-                title: 'Rally for Immigrant Rights',
-                date: 'Sat, Mar 1 · 10:00 AM',
-                location: 'City Hall Plaza',
-                distance: '0.5 mi away',
-                attendees: 340,
-                color: '#6A1B9A',
-                bg: '#F3E5F5',
-                border: '#CE93D8',
-              },
-              {
-                icon: 'bullhorn-outline',
-                title: 'Community Vigil — No More Raids',
-                date: 'Sun, Mar 2 · 6:00 PM',
-                location: 'Riverside Park',
-                distance: '1.2 mi away',
-                attendees: 180,
-                color: '#C62828',
-                bg: '#FFEBEE',
-                border: '#EF9A9A',
-              },
-              {
-                icon: 'sign-text',
-                title: 'March on Federal Building',
-                date: 'Fri, Mar 7 · 9:00 AM',
-                location: 'Federal Courthouse',
-                distance: '2.0 mi away',
-                attendees: 620,
-                color: '#00897B',
-                bg: '#E0F2F1',
-                border: '#80CBC4',
-              },
-              {
-                icon: 'handshake-outline',
-                title: 'Know Your Rights Workshop',
-                date: 'Thu, Mar 6 · 7:00 PM',
-                location: 'Community Library',
-                distance: '0.8 mi away',
-                attendees: 95,
-                color: '#2E7D32',
-                bg: '#E8F5E9',
-                border: '#A5D6A7',
-              },
-              {
-                icon: 'volume-high',
-                title: 'Call-In Day to Congress',
-                date: 'Mon, Mar 3 · All Day',
-                location: 'Virtual / Phone',
-                distance: 'Anywhere',
-                attendees: 1200,
-                color: '#E65100',
-                bg: '#FFF3E0',
-                border: '#FFCC80',
-              },
-            ].map((event) => (
-              <View
-                key={event.title}
-                style={{ width: 210, backgroundColor: event.bg, borderWidth: 1, borderColor: event.border, borderRadius: 16, padding: 14 }}
-              >
-                {/* Top row: icon + attendee count */}
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-                  <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: event.color, justifyContent: 'center', alignItems: 'center' }}>
-                    <MaterialCommunityIcons name={event.icon as any} size={22} color="#ffffff" />
-                  </View>
-                  <View style={{ backgroundColor: event.color + '22', borderRadius: 8, paddingHorizontal: 7, paddingVertical: 3, flexDirection: 'row', alignItems: 'center' }}>
-                    <MaterialCommunityIcons name="account-group-outline" size={12} color={event.color} style={{ marginRight: 3 }} />
-                    <Text style={{ color: event.color, fontSize: 11, fontWeight: '700' }}>{event.attendees.toLocaleString()}</Text>
-                  </View>
-                </View>
-
-                {/* Title */}
-                <Text style={{ color: '#4E342E', fontSize: 13, fontWeight: '700', lineHeight: 18, marginBottom: 8 }}>
-                  {event.title}
-                </Text>
-
-                {/* Date & location */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
-                  <MaterialCommunityIcons name="calendar-outline" size={12} color="#6D4C41" style={{ marginRight: 4 }} />
-                  <Text style={{ color: '#6D4C41', fontSize: 11 }}>{event.date}</Text>
-                </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <MaterialCommunityIcons name="map-marker-outline" size={12} color="#6D4C41" style={{ marginRight: 4 }} />
-                  <Text style={{ color: '#6D4C41', fontSize: 11 }}>{event.location} · {event.distance}</Text>
-                </View>
-              </View>
-            ))}
-          </ScrollView>
-        </View>
+        <GetOrganizedSection
+          isLoadingEvents={isLoadingEvents}
+          localEvents={localEvents}
+          lastEventIndex={lastEventIndex}
+          triggerSelectionHaptic={triggerSelectionHaptic}
+        />
 
         {/* ── Quick Actions ── */}
         <View style={{ flexDirection: 'row', gap: 12, marginHorizontal: 20, marginBottom: 20 }}>
@@ -879,54 +641,12 @@ export default function HomeScreen() {
 
       </ScrollView>
 
-      {/* ── Articles Bottom Sheet Modal ── */}
-      <Modal
-        animationType="slide"
-        transparent={true}
+      <ArticlesListModal
         visible={isModalVisible}
-        onRequestClose={closeArticles}
-      >
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
-          <View style={{ backgroundColor: '#FFF8E1', borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 20, paddingBottom: 40, height: '70%', shadowColor: '#000', shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.1, shadowRadius: 10 }}>
-            {/* Grabber */}
-            <View style={{ width: 40, height: 5, backgroundColor: '#D7CCC8', borderRadius: 3, alignSelf: 'center', marginVertical: 12 }} />
-
-            {/* Header */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <Text style={{ fontSize: 20, fontWeight: '800', color: '#4E342E' }}>Related Articles</Text>
-              <TouchableOpacity onPress={closeArticles} className="w-8 h-8 rounded-full bg-slate-100 items-center justify-center">
-                <Text style={{ fontSize: 18, color: '#64748b' }}>✕</Text>
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView showsVerticalScrollIndicator={false}>
-              {selectedSnippet?.articles && selectedSnippet.articles.length > 0 ? (
-                selectedSnippet.articles.map((article, index) => (
-                  <View key={index} style={{ marginBottom: 16, padding: 16, backgroundColor: '#FFF6E8', borderRadius: 16, borderWidth: 1, borderColor: '#FFE0B2' }}>
-                    <Text style={{ color: '#6D4C41', fontSize: 11, fontWeight: '700', textTransform: 'uppercase', marginBottom: 4 }}>{article.parsedSource || article.source}</Text>
-                    <Text style={{ color: '#4E342E', fontSize: 15, fontWeight: '700', lineHeight: 22, marginBottom: 12 }}>{article.formattedTitle || article.title}</Text>
-                    <TouchableOpacity
-                      onPress={() => {
-                        triggerHaptic();
-                        article.link && Linking.openURL(article.link);
-                      }}
-                      style={{ flexDirection: 'row', alignItems: 'center' }}
-                    >
-                      <Text style={{ color: '#E65100', fontSize: 13, fontWeight: '600' }}>Read full coverage</Text>
-                      <Text style={{ color: '#E65100', fontSize: 16, marginLeft: 4 }}>›</Text>
-                    </TouchableOpacity>
-                  </View>
-                ))
-              ) : (
-                <View style={{ alignItems: 'center', paddingVertical: 40 }}>
-                  <MaterialCommunityIcons name="newspaper-variant-outline" size={40} color="#6D4C41" style={{ marginBottom: 16 }} />
-                  <Text style={{ color: '#6D4C41', fontSize: 14 }}>No specific articles found for this snippet.</Text>
-                </View>
-              )}
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
+        onClose={closeArticles}
+        snippet={selectedSnippet}
+        triggerHaptic={() => triggerHaptic()}
+      />
     </SafeAreaView>
   );
 }
