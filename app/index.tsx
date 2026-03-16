@@ -5,7 +5,6 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import GetOrganizedSection from '../components/GetOrganizedSection';
 import OrganizationsSection from '../components/OrganizationsSection';
@@ -308,18 +307,6 @@ export default function HomeScreen() {
     fetchNationTopics();
   }, [router]);
 
-  const handleResetOnboarding = async () => {
-    try {
-      await AsyncStorage.removeItem('hasSeenOnboarding');
-      await AsyncStorage.removeItem('userLanguage');
-      await AsyncStorage.removeItem('userLocation');
-      await AsyncStorage.removeItem('userStateCode');
-      router.replace('/onboarding');
-    } catch (error) {
-      console.error('Error resetting onboarding:', error);
-    }
-  };
-
   const openArticles = (snippet: Snippet) => {
     triggerHaptic();
     setSelectedSnippet(snippet);
@@ -410,25 +397,6 @@ export default function HomeScreen() {
           lastEventIndex={lastEventIndex}
           triggerSelectionHaptic={triggerSelectionHaptic}
         />
-
-        {/* ── Quick Actions ── */}
-        <View style={{ flexDirection: 'row', gap: 12, marginHorizontal: 20, marginBottom: 20 }}>
-          {[
-            { icon: 'alert-outline', label: 'Alerts', onPress: handleResetOnboarding },
-            { icon: 'scale-balance', label: 'Know Your\nRights', onPress: () => router.push('/know-your-rights') },
-            { icon: 'hand-front-right', label: 'Organize', onPress: undefined },
-          ].map((item) => (
-            <TouchableOpacity
-              key={item.label}
-              activeOpacity={0.7}
-              onPress={item.onPress}
-              style={{ flex: 1, backgroundColor: '#FBE9E7', borderWidth: 1, borderColor: '#FFCCBC', borderRadius: 14, padding: 14, alignItems: 'center' }}
-            >
-              <MaterialCommunityIcons name={item.icon as any} size={22} color="#BF360C" style={{ marginBottom: 4 }} />
-              <Text style={{ color: '#BF360C', fontSize: 11, fontWeight: '600', textAlign: 'center', lineHeight: 15 }}>{item.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
 
       </ScrollView>
 

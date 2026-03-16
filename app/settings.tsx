@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView, ActivityIndicator, TextInput, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import { STATE_CITIES } from '../constants/stateCities';
@@ -33,6 +34,7 @@ const US_STATES = [
 ];
 
 export default function SettingsScreen() {
+    const router = useRouter();
     const [language, setLanguage] = useState<string | null>(null);
     const [location, setLocation] = useState<string | null>(null);
     const [vibrationEnabled, setVibrationEnabled] = useState<boolean>(true);
@@ -273,6 +275,18 @@ export default function SettingsScreen() {
         }
     };
 
+    const handleResetOnboarding = async () => {
+        try {
+            await AsyncStorage.removeItem('hasSeenOnboarding');
+            await AsyncStorage.removeItem('userLanguage');
+            await AsyncStorage.removeItem('userLocation');
+            await AsyncStorage.removeItem('userStateCode');
+            router.replace('/onboarding');
+        } catch (error) {
+            console.error('Error resetting onboarding:', error);
+        }
+    };
+
     const toggleExpand = (item: 'language' | 'location') => {
         if (expandedItem === item) {
             setExpandedItem(null);
@@ -368,7 +382,7 @@ export default function SettingsScreen() {
                         <TouchableOpacity
                             activeOpacity={0.7}
                             onPress={handleToggleVibration}
-                            className="flex-row items-center justify-between p-4"
+                            className="flex-row items-center justify-between p-4 border-b border-slate-100"
                         >
                             <View className="flex-row items-center">
                                 <MaterialCommunityIcons
@@ -391,6 +405,19 @@ export default function SettingsScreen() {
                                     />
                                 </View>
                             </View>
+                        </TouchableOpacity>
+
+                        {/* ------------- Reset onboarding (Alerts) ------------- */}
+                        <TouchableOpacity
+                            activeOpacity={0.7}
+                            onPress={handleResetOnboarding}
+                            className="flex-row items-center justify-between p-4"
+                        >
+                            <View className="flex-row items-center">
+                                <MaterialCommunityIcons name="alert-outline" size={20} color="#6D4C41" style={{ marginRight: 12 }} />
+                                <Text className="text-base font-semibold text-slate-700">Reset onboarding</Text>
+                            </View>
+                            <Text className="text-slate-400 text-lg">›</Text>
                         </TouchableOpacity>
 
                         {/* Location Dropdown Content */}
