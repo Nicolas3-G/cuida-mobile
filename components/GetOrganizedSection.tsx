@@ -23,7 +23,7 @@ const GetOrganizedSection = ({
         Get Organized
       </Text>
       <Text style={{ color: '#6D4C41', fontSize: 13, paddingHorizontal: 20, marginBottom: 12 }}>
-        Protests & actions happening near you
+        Protests & events happening near you
       </Text>
 
       {isLoadingEvents ? (
