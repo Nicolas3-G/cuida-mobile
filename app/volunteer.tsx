@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 
@@ -63,11 +64,21 @@ export default function VolunteerScreen() {
     const [sharingIds, setSharingIds] = useState<string[]>([]);
     const [isCollapsed, setIsCollapsed] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
+    const [hasSignedUp, setHasSignedUp] = useState(false);
 
     const slideAnim = useRef(new Animated.Value(0)).current;
     const collapseAnim = useRef(new Animated.Value(0)).current; // 1 = expanded, 0 = collapsed
     const scrollViewRef = useRef<ScrollView>(null);
 
+    useEffect(() => {
+        async function loadVolunteerStatus() {
+            const stored = await AsyncStorage.getItem('hasSignedUpVolunteer');
+            if (stored === 'true') {
+                setHasSignedUp(true);
+            }
+        }
+        loadVolunteerStatus();
+    }, []);
     const handleSignup = async () => {
         if (isCollapsed) {
             setIsCollapsed(false);
@@ -94,6 +105,8 @@ export default function VolunteerScreen() {
                 source: 'app-volunteer-screen',
             });
 
+            await AsyncStorage.setItem('hasSignedUpVolunteer', 'true');
+            setHasSignedUp(true);
             setStep('success');
         } catch (error) {
             console.error('Error saving volunteer signup:', error);
@@ -173,6 +186,15 @@ export default function VolunteerScreen() {
                 Sign up to be part of the Cuida Volunteer Network. We'll match you with organizations in your area that need help.
             </Text>
 
+            {hasSignedUp && (
+                <View style={styles.banner}>
+                    <Text style={styles.bannerTitle}>You're already in the network!</Text>
+                    <Text style={styles.bannerText}>
+                        You’ve already signed up, but you can sign up again if you want to update your info or add someone else :)
+                    </Text>
+                </View>
+            )}
+
             <View style={styles.form}>
                 <Animated.View
                     style={{
@@ -233,7 +255,9 @@ export default function VolunteerScreen() {
                     {isLoading ? (
                         <ActivityIndicator color="#fff" />
                     ) : (
-                        <Text style={styles.primaryButtonText}>Sign Me Up</Text>
+                        <Text style={styles.primaryButtonText}>
+                            {hasSignedUp ? 'Sign up anyway' : 'Sign Me Up'}
+                        </Text>
                     )}
                 </TouchableOpacity>
             </View>
@@ -385,6 +409,26 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         lineHeight: 22,
         marginBottom: 32,
+    },
+    banner: {
+        width: '100%',
+        backgroundColor: '#fef3c7',
+        borderRadius: 14,
+        padding: 14,
+        marginBottom: 24,
+        borderWidth: 1,
+        borderColor: '#fde68a',
+    },
+    bannerTitle: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#92400e',
+        marginBottom: 4,
+    },
+    bannerText: {
+        fontSize: 13,
+        color: '#92400e',
+        lineHeight: 18,
     },
     form: {
         width: '100%',
