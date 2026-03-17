@@ -306,6 +306,10 @@ export default function SettingsScreen() {
         }
     };
 
+    const handleSendFeedback = () => {
+        router.push('/feedback');
+    };
+
     const toggleExpand = (item: 'language' | 'location') => {
         if (expandedItem === item) {
             setExpandedItem(null);
@@ -462,6 +466,19 @@ export default function SettingsScreen() {
                             <View className="flex-row items-center">
                                 <MaterialCommunityIcons name="alert-outline" size={20} color="#6D4C41" style={{ marginRight: 12 }} />
                                 <Text className="text-base font-semibold text-slate-700">Reset onboarding</Text>
+                            </View>
+                            <Text className="text-slate-400 text-lg">›</Text>
+                        </TouchableOpacity>
+
+                        {/* ------------- Feedback ------------- */}
+                        <TouchableOpacity
+                            activeOpacity={0.7}
+                            onPress={handleSendFeedback}
+                            className="flex-row items-center justify-between p-4 border-t border-slate-100"
+                        >
+                            <View className="flex-row items-center">
+                                <MaterialCommunityIcons name="message-text-outline" size={20} color="#6D4C41" style={{ marginRight: 12 }} />
+                                <Text className="text-base font-semibold text-slate-700">Send feedback</Text>
                             </View>
                             <Text className="text-slate-400 text-lg">›</Text>
                         </TouchableOpacity>

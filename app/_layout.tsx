@@ -97,6 +97,13 @@ export default function RootLayout() {
               presentation: 'modal',
             }}
           />
+          <Stack.Screen
+            name="feedback"
+            options={{
+              headerShown: false,
+              presentation: 'modal',
+            }}
+          />
         </Stack>
         {!splashAnimationComplete && (
           <AnimatedSplashScreen
