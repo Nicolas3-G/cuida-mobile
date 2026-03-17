@@ -24,8 +24,8 @@ export default function HomeScreen() {
   const [savedLocation, setSavedLocation] = useState<string | null>(null);
   const [userState, setUserState] = useState('');
 
-  const { snippets, summaryArticles, isLoading: isLoadingSnippets } = useSnippets(stateCode);
-  const { targetingStatus } = useTargetingStatus(stateCode);
+  const { snippets, summaryArticles, allSummaryArticles, isLoading: isLoadingSnippets } = useSnippets(stateCode, savedLocation);
+  const { targetingStatus } = useTargetingStatus(savedLocation);
   const { nationArticles, isLoading: isLoadingNation } = useNationTopics();
   const { events: localEvents, isLoading: isLoadingEvents } = useLocalEvents(savedLocation);
   const { organizations: localOrganizations, isLoading: isLoadingOrgs } = useLocalOrganizations(savedLocation);
@@ -135,7 +135,7 @@ export default function HomeScreen() {
           lastNewsIndex={lastNewsIndex}
           triggerSelectionHaptic={triggerSelectionHaptic}
           nationArticles={nationArticles}
-          summaryArticles={summaryArticles}
+          summaryArticles={allSummaryArticles}
           expandedStoryIds={expandedStoryIds}
           truncatableStoryIds={truncatableStoryIds}
           toggleExpand={toggleExpand}

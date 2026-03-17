@@ -5,6 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 interface Snippet {
   snippetText: string;
   articles?: any[];
+  scope?: 'local' | 'state';
 }
 
 interface AnimatedSummaryItemProps {
@@ -46,6 +47,30 @@ const AnimatedSummaryItem = ({ snippet, index, onOpenArticles }: AnimatedSummary
     >
       <MaterialCommunityIcons name="circle-small" size={20} color="#F57C00" style={{ marginRight: 6, marginTop: 1 }} />
       <View style={{ flex: 1, borderLeftWidth: 2, borderLeftColor: '#F57C00', paddingLeft: 10 }}>
+        {snippet.scope && (
+          <View
+            style={{
+              alignSelf: 'flex-start',
+              backgroundColor: snippet.scope === 'local' ? '#E8F5E9' : '#E3F2FD',
+              borderRadius: 999,
+              paddingHorizontal: 8,
+              paddingVertical: 2,
+              marginBottom: 4,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 10,
+                fontWeight: '700',
+                letterSpacing: 0.5,
+                color: snippet.scope === 'local' ? '#2E7D32' : '#1565C0',
+                textTransform: 'uppercase',
+              }}
+            >
+                  {snippet.scope === 'local' ? 'Near you' : 'In your state'}
+            </Text>
+          </View>
+        )}
         <Text style={{ color: '#5D4037', fontSize: 13, lineHeight: 19, marginBottom: 6 }}>{snippet.snippetText}</Text>
         {snippet.articles && snippet.articles.length > 0 && (
           <TouchableOpacity
