@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, ActivityIndicator, TextInput, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, SafeAreaView, ActivityIndicator, TextInput, KeyboardAvoidingView, Platform, Alert, Linking } from 'react-native';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -291,6 +291,25 @@ export default function SettingsScreen() {
         }
     };
 
+    const handleSupportProject = async () => {
+        try {
+            const url = 'https://ko-fi.com/cuida';
+            const canOpen = await Linking.canOpenURL(url);
+            if (canOpen) {
+                await Linking.openURL(url);
+            } else {
+                Alert.alert('Unable to open link', 'Please try again later.');
+            }
+        } catch (error) {
+            console.error('Error opening support link:', error);
+            Alert.alert('Unable to open link', 'Please try again later.');
+        }
+    };
+
+    const handleSendFeedback = () => {
+        router.push('/feedback');
+    };
+
     const toggleExpand = (item: 'language' | 'location') => {
         if (expandedItem === item) {
             setExpandedItem(null);
@@ -314,6 +333,20 @@ export default function SettingsScreen() {
                 className="flex-1"
             >
                 <View className="flex-1 px-4 pt-6">
+                    <View className="mb-4">
+                        <View className="relative items-center justify-center">
+                            <Text className="text-2xl font-extrabold text-slate-800 text-center">
+                                Settings
+                            </Text>
+                            <TouchableOpacity
+                                onPress={() => router.back()}
+                                activeOpacity={0.8}
+                                className="absolute right-0 w-9 h-9 rounded-full bg-slate-100 items-center justify-center"
+                            >
+                                <Ionicons name="close" size={18} color="#1e293b" />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
                     <Text className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 ml-2">
                         Preferences
                     </Text>
@@ -433,6 +466,19 @@ export default function SettingsScreen() {
                             <View className="flex-row items-center">
                                 <MaterialCommunityIcons name="alert-outline" size={20} color="#6D4C41" style={{ marginRight: 12 }} />
                                 <Text className="text-base font-semibold text-slate-700">Reset onboarding</Text>
+                            </View>
+                            <Text className="text-slate-400 text-lg">›</Text>
+                        </TouchableOpacity>
+
+                        {/* ------------- Feedback ------------- */}
+                        <TouchableOpacity
+                            activeOpacity={0.7}
+                            onPress={handleSendFeedback}
+                            className="flex-row items-center justify-between p-4 border-t border-slate-100"
+                        >
+                            <View className="flex-row items-center">
+                                <MaterialCommunityIcons name="message-text-outline" size={20} color="#6D4C41" style={{ marginRight: 12 }} />
+                                <Text className="text-base font-semibold text-slate-700">Send feedback</Text>
                             </View>
                             <Text className="text-slate-400 text-lg">›</Text>
                         </TouchableOpacity>
@@ -671,9 +717,24 @@ export default function SettingsScreen() {
 
                     </View>
 
-                    <Text className="text-center text-slate-400 text-xs mt-auto pb-4">
-                        Cuida App Version 1.0.0
-                    </Text>
+                    <View className="mt-auto pb-4">
+                        <Text className="text-center text-slate-500 text-xs mb-2 px-4">
+                            Cuida is a free platform built by a solo immigrant developer. Your support helps keep it running.
+                        </Text>
+                        <TouchableOpacity
+                            activeOpacity={0.8}
+                            onPress={handleSupportProject}
+                            className="w-full rounded-[14px] py-[14px] items-center bg-[#F57C00]"
+                        >
+                            <Text className="text-white text-[15px] font-bold">
+                                Support the project
+                            </Text>
+                        </TouchableOpacity>
+
+                        <Text className="text-center text-slate-400 text-xs mt-3">
+                            Cuida App Version 1.0.0
+                        </Text>
+                    </View>
                 </View>
             </KeyboardAvoidingView>
         </SafeAreaView>
