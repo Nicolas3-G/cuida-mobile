@@ -39,7 +39,7 @@ export function useNationTopics() {
                 title: firstArticle.formattedTitle || firstArticle.title,
                 location: firstArticle.parsedSource || firstArticle.source || 'Nationwide',
                 link: firstArticle.link,
-                color: '#00897B',
+                color: '#6A1B9A',
                 icon: 'earth',
                 fullArticle: firstArticle,
               };

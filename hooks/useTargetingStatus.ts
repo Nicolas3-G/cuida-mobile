@@ -2,27 +2,28 @@ import { useEffect, useState } from 'react';
 import { collection, query, where, limit, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 
-export function useTargetingStatus(stateCode: string | null) {
+export function useTargetingStatus(city: string | null) {
   const [targetingStatus, setTargetingStatus] = useState<number>(0);
 
   useEffect(() => {
-    if (!stateCode) return;
+    if (!city) return;
 
     let cancelled = false;
+    const normalizedCity = city.trim().toLowerCase();
 
     async function fetchStatus() {
       try {
-        const statusRef = collection(db, 'stateTargetingStatus');
+        const statusRef = collection(db, 'cityTargetingStatus');
         const q = query(
           statusRef,
-          where('stateCode', '==', stateCode),
+          where('city', '==', normalizedCity),
           limit(1)
         );
         const querySnapshot = await getDocs(q);
         if (cancelled) return;
 
         if (!querySnapshot.empty) {
-          const data = querySnapshot.docs[0].data();
+          const data = querySnapshot.docs[0].data() as any;
           const statusCode = parseInt(data.targetingStatusCode);
           if (!isNaN(statusCode)) {
             setTargetingStatus(statusCode);
@@ -37,7 +38,7 @@ export function useTargetingStatus(stateCode: string | null) {
     return () => {
       cancelled = true;
     };
-  }, [stateCode]);
+  }, [city]);
 
   return { targetingStatus };
 }
