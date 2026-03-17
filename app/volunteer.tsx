@@ -15,6 +15,8 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase';
 
 
 const { width } = Dimensions.get('window');
@@ -66,7 +68,7 @@ export default function VolunteerScreen() {
     const collapseAnim = useRef(new Animated.Value(0)).current; // 1 = expanded, 0 = collapsed
     const scrollViewRef = useRef<ScrollView>(null);
 
-    const handleSignup = () => {
+    const handleSignup = async () => {
         if (isCollapsed) {
             setIsCollapsed(false);
             Animated.spring(collapseAnim, {
@@ -80,17 +82,24 @@ export default function VolunteerScreen() {
         }
 
         if (!formData.name || !formData.phone) return;
-        setIsLoading(true);
-        // Simulate API call
-        setTimeout(() => {
+        if (isLoading) return;
+
+        try {
+            setIsLoading(true);
+            await addDoc(collection(db, 'volunteers'), {
+                name: formData.name.trim(),
+                phone: formData.phone.trim(),
+                zip: formData.zip.trim() || null,
+                createdAt: serverTimestamp(),
+                source: 'app-volunteer-screen',
+            });
+
+            setStep('success');
+        } catch (error) {
+            console.error('Error saving volunteer signup:', error);
+        } finally {
             setIsLoading(false);
-            setStep('matches');
-            Animated.timing(slideAnim, {
-                toValue: 1,
-                duration: 400,
-                useNativeDriver: true,
-            }).start();
-        }, 1000);
+        }
     };
 
 
