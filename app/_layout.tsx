@@ -93,10 +93,8 @@ export default function RootLayout() {
           <Stack.Screen
             name="settings"
             options={{
-              title: 'Settings',
+              headerShown: false,
               presentation: 'modal',
-              headerStyle: { backgroundColor: '#fff6e8' },
-              headerShadowVisible: false,
             }}
           />
         </Stack>

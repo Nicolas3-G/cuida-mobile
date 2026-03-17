@@ -329,6 +329,20 @@ export default function SettingsScreen() {
                 className="flex-1"
             >
                 <View className="flex-1 px-4 pt-6">
+                    <View className="mb-4">
+                        <View className="relative items-center justify-center">
+                            <Text className="text-2xl font-extrabold text-slate-800 text-center">
+                                Settings
+                            </Text>
+                            <TouchableOpacity
+                                onPress={() => router.back()}
+                                activeOpacity={0.8}
+                                className="absolute right-0 w-9 h-9 rounded-full bg-slate-100 items-center justify-center"
+                            >
+                                <Ionicons name="close" size={18} color="#1e293b" />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
                     <Text className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 ml-2">
                         Preferences
                     </Text>
