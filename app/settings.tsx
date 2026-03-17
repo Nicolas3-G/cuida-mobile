@@ -275,6 +275,10 @@ export default function SettingsScreen() {
         }
     };
 
+    const handleRefreshData = () => {
+        router.replace('/');
+    };
+
     const handleResetOnboarding = async () => {
         try {
             await AsyncStorage.removeItem('hasSeenOnboarding');
@@ -405,6 +409,19 @@ export default function SettingsScreen() {
                                     />
                                 </View>
                             </View>
+                        </TouchableOpacity>
+
+                        {/* ------------- Refresh data ------------- */}
+                        <TouchableOpacity
+                            activeOpacity={0.7}
+                            onPress={handleRefreshData}
+                            className="flex-row items-center justify-between p-4 border-b border-slate-100"
+                        >
+                            <View className="flex-row items-center">
+                                <MaterialCommunityIcons name="refresh" size={20} color="#6D4C41" style={{ marginRight: 12 }} />
+                                <Text className="text-base font-semibold text-slate-700">Refresh data</Text>
+                            </View>
+                            <Text className="text-slate-400 text-lg">›</Text>
                         </TouchableOpacity>
 
                         {/* ------------- Reset onboarding (Alerts) ------------- */}

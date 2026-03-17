@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { collection, query, where, limit, getDocs } from "firebase/firestore";
+import { collection, query, where, limit, getDocs, orderBy } from "firebase/firestore";
 import { db } from "../firebase";
 
 /** Colors per event icon type (protests, rallies, meetings, etc.) */
@@ -64,6 +64,7 @@ export function useLocalEvents(city: string | null) {
         const q = query(
           eventsRef,
           where("city", "==", normalizedCity),
+          orderBy('dateCreated', 'desc'),
           limit(1)
         );
         const querySnapshot = await getDocs(q);
