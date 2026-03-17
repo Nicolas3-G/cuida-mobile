@@ -1,5 +1,5 @@
 import React, { type MutableRefObject } from 'react';
-import { ScrollView, Text, View, ActivityIndicator } from 'react-native';
+import { ScrollView, Text, View, ActivityIndicator, TouchableOpacity, Linking } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 interface GetOrganizedSectionProps {
@@ -23,7 +23,7 @@ const GetOrganizedSection = ({
         Get Organized
       </Text>
       <Text style={{ color: '#6D4C41', fontSize: 13, paddingHorizontal: 20, marginBottom: 12 }}>
-        Protests & actions happening near you
+        Protests & events happening near you
       </Text>
 
       {isLoadingEvents ? (
@@ -44,8 +44,12 @@ const GetOrganizedSection = ({
           }}
         >
           {localEvents.map((event) => (
-            <View
+            <TouchableOpacity
               key={event.id || event.title}
+              activeOpacity={0.85}
+              onPress={() => {
+                if (event.url) Linking.openURL(event.url);
+              }}
               style={{ width: 210, backgroundColor: event.bg, borderWidth: 1, borderColor: event.border, borderRadius: 16, padding: 14 }}
             >
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
@@ -68,11 +72,17 @@ const GetOrganizedSection = ({
                 <MaterialCommunityIcons name="calendar-outline" size={12} color="#6D4C41" style={{ marginRight: 4 }} />
                 <Text style={{ color: '#6D4C41', fontSize: 11 }}>{event.date}</Text>
               </View>
+              {event.time ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+                  <MaterialCommunityIcons name="clock-outline" size={12} color="#6D4C41" style={{ marginRight: 4 }} />
+                  <Text style={{ color: '#6D4C41', fontSize: 11 }}>{event.time}</Text>
+                </View>
+              ) : null}
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <MaterialCommunityIcons name="map-marker-outline" size={12} color="#6D4C41" style={{ marginRight: 4 }} />
-                <Text style={{ color: '#6D4C41', fontSize: 11 }}>{event.location} · {event.distance}</Text>
+                <Text style={{ color: '#6D4C41', fontSize: 11 }}>{event.location}</Text>
               </View>
-            </View>
+            </TouchableOpacity>
           ))}
         </ScrollView>
       )}
