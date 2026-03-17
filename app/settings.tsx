@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, ActivityIndicator, TextInput, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, SafeAreaView, ActivityIndicator, TextInput, KeyboardAvoidingView, Platform, Alert, Linking } from 'react-native';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -288,6 +288,21 @@ export default function SettingsScreen() {
             router.replace('/onboarding');
         } catch (error) {
             console.error('Error resetting onboarding:', error);
+        }
+    };
+
+    const handleSupportProject = async () => {
+        try {
+            const url = 'https://ko-fi.com/cuida';
+            const canOpen = await Linking.canOpenURL(url);
+            if (canOpen) {
+                await Linking.openURL(url);
+            } else {
+                Alert.alert('Unable to open link', 'Please try again later.');
+            }
+        } catch (error) {
+            console.error('Error opening support link:', error);
+            Alert.alert('Unable to open link', 'Please try again later.');
         }
     };
 
@@ -671,9 +686,24 @@ export default function SettingsScreen() {
 
                     </View>
 
-                    <Text className="text-center text-slate-400 text-xs mt-auto pb-4">
-                        Cuida App Version 1.0.0
-                    </Text>
+                    <View className="mt-auto pb-4">
+                        <Text className="text-center text-slate-500 text-xs mb-2 px-4">
+                            Cuida is a free platform built by a solo immigrant developer. Your support helps keep it running.
+                        </Text>
+                        <TouchableOpacity
+                            activeOpacity={0.8}
+                            onPress={handleSupportProject}
+                            className="w-full rounded-[14px] py-[14px] items-center bg-[#F57C00]"
+                        >
+                            <Text className="text-white text-[15px] font-bold">
+                                Support the project
+                            </Text>
+                        </TouchableOpacity>
+
+                        <Text className="text-center text-slate-400 text-xs mt-3">
+                            Cuida App Version 1.0.0
+                        </Text>
+                    </View>
                 </View>
             </KeyboardAvoidingView>
         </SafeAreaView>
