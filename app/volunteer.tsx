@@ -15,6 +15,9 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase';
 
 
 const { width } = Dimensions.get('window');
@@ -61,12 +64,22 @@ export default function VolunteerScreen() {
     const [sharingIds, setSharingIds] = useState<string[]>([]);
     const [isCollapsed, setIsCollapsed] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
+    const [hasSignedUp, setHasSignedUp] = useState(false);
 
     const slideAnim = useRef(new Animated.Value(0)).current;
     const collapseAnim = useRef(new Animated.Value(0)).current; // 1 = expanded, 0 = collapsed
     const scrollViewRef = useRef<ScrollView>(null);
 
-    const handleSignup = () => {
+    useEffect(() => {
+        async function loadVolunteerStatus() {
+            const stored = await AsyncStorage.getItem('hasSignedUpVolunteer');
+            if (stored === 'true') {
+                setHasSignedUp(true);
+            }
+        }
+        loadVolunteerStatus();
+    }, []);
+    const handleSignup = async () => {
         if (isCollapsed) {
             setIsCollapsed(false);
             Animated.spring(collapseAnim, {
@@ -80,17 +93,26 @@ export default function VolunteerScreen() {
         }
 
         if (!formData.name || !formData.phone) return;
-        setIsLoading(true);
-        // Simulate API call
-        setTimeout(() => {
+        if (isLoading) return;
+
+        try {
+            setIsLoading(true);
+            await addDoc(collection(db, 'volunteers'), {
+                name: formData.name.trim(),
+                phone: formData.phone.trim(),
+                zip: formData.zip.trim() || null,
+                createdAt: serverTimestamp(),
+                source: 'app-volunteer-screen',
+            });
+
+            await AsyncStorage.setItem('hasSignedUpVolunteer', 'true');
+            setHasSignedUp(true);
+            setStep('success');
+        } catch (error) {
+            console.error('Error saving volunteer signup:', error);
+        } finally {
             setIsLoading(false);
-            setStep('matches');
-            Animated.timing(slideAnim, {
-                toValue: 1,
-                duration: 400,
-                useNativeDriver: true,
-            }).start();
-        }, 1000);
+        }
     };
 
 
@@ -129,6 +151,7 @@ export default function VolunteerScreen() {
 
         return (
             <Animated.View
+                className="mb-5 items-center"
                 style={[
                     styles.orgSquareCard,
                     {
@@ -137,19 +160,32 @@ export default function VolunteerScreen() {
                     },
                 ]}
             >
-                <View style={[styles.imagePlaceholder, { backgroundColor: org.color }]}>
+                <View
+                    className="rounded-2xl mb-2 justify-center items-center border border-[rgba(0,0,0,0.05)]"
+                    style={[
+                        styles.imagePlaceholder,
+                        { backgroundColor: org.color },
+                    ]}
+                >
                     <MaterialCommunityIcons name="image-outline" size={24} color="rgba(0,0,0,0.1)" />
                 </View>
-                <Text style={styles.orgSquareName} numberOfLines={1}>{org.name}</Text>
+                <Text
+                    className="text-[12px] font-semibold text-[#6D4C41] text-center w-full"
+                    numberOfLines={1}
+                >
+                    {org.name}
+                </Text>
             </Animated.View>
         );
     };
 
 
     const renderNearbyOrgs = () => (
-        <View style={styles.nearbySection}>
-            <Text style={styles.nearbyTitle}>Find places near you that needs volunteers</Text>
-            <View style={styles.nearbyGrid}>
+        <View className="w-full mt-10 mb-5">
+            <Text className="text-[16px] font-bold text-[#4E342E] mb-4 text-left">
+                Find places near you that needs volunteers
+            </Text>
+            <View className="flex-row flex-wrap justify-start w-full gap-3">
                 {NEARBY_ORGS.map((org, index) => (
                     <AnimatedOrgCard key={org.id} org={org} index={index} />
                 ))}
@@ -157,114 +193,149 @@ export default function VolunteerScreen() {
         </View>
     );
 
-    const renderSignup = () => (
-        <View style={styles.content}>
-            <Text style={styles.title}>Join the Network</Text>
-            <Text style={styles.subtitle}>
-                Sign up to be part of the Cuida Volunteer Network. We'll match you with organizations in your area that need help.
-            </Text>
+    const renderSignup = () => {
+        const isPrimaryDisabled = (!formData.name || !formData.phone || isLoading) && !isCollapsed;
 
-            <View style={styles.form}>
-                <Animated.View
-                    style={{
-                        opacity: collapseAnim,
-                        maxHeight: collapseAnim.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [0, 300], // Adjust based on content height
-                        }),
-                        transform: [{
-                            scale: collapseAnim.interpolate({
+        return (
+            <View className="px-6 items-center">
+                <Text className="text-[28px] font-extrabold text-[#4E342E] text-center mb-3">Join the Network</Text>
+                <Text className="text-[15px] text-[#6D4C41] text-center leading-[22px] mb-8">
+                    Sign up to be part of the Cuida Volunteer Network. We'll match you with organizations in your area that need help.
+                </Text>
+
+                {hasSignedUp && (
+                    <View className="w-full rounded-[14px] border border-[#fde68a] bg-[#fef3c7] px-3.5 py-3.5 mb-6">
+                        <Text className="text-sm font-bold text-[#92400e] mb-1">You're already in the network!</Text>
+                        <Text className="text-[13px] leading-[18px] text-[#92400e]">
+                            You’ve already signed up, but you can sign up again if you want to update your info or add someone else :)
+                        </Text>
+                    </View>
+                )}
+
+                <View className="w-full">
+                    <Animated.View
+                        className="overflow-hidden"
+                        style={{
+                            opacity: collapseAnim,
+                            maxHeight: collapseAnim.interpolate({
                                 inputRange: [0, 1],
-                                outputRange: [0.8, 1],
+                                outputRange: [0, 300], // Adjust based on content height
                             }),
-                        }],
-                        overflow: 'hidden',
-                    }}
-                    pointerEvents={isCollapsed ? 'none' : 'auto'}
-                >
-                    <Text style={styles.label}>Full Name</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Enter your name"
-                        placeholderTextColor="#94a3b8"
-                        value={formData.name}
-                        onChangeText={(text) => setFormData({ ...formData, name: text })}
-                    />
+                            transform: [{
+                                scale: collapseAnim.interpolate({
+                                    inputRange: [0, 1],
+                                    outputRange: [0.8, 1],
+                                }),
+                            }],
+                        }}
+                        pointerEvents={isCollapsed ? 'none' : 'auto'}
+                    >
+                        <Text className="text-[13px] font-bold text-[#5D4037] mb-2 ml-1 uppercase">Full Name</Text>
+                        <TextInput
+                            className="bg-slate-50 border border-[#D7CCC8] rounded-xl px-4 py-4 text-base text-[#4E342E] mb-5"
+                            placeholder="Enter your name"
+                            placeholderTextColor="#94a3b8"
+                            value={formData.name}
+                            onChangeText={(text) => setFormData({ ...formData, name: text })}
+                        />
 
-                    <Text style={styles.label}>Phone Number</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="(555) 000-0000"
-                        placeholderTextColor="#94a3b8"
-                        keyboardType="phone-pad"
-                        value={formData.phone}
-                        onChangeText={(text) => setFormData({ ...formData, phone: text })}
-                    />
+                        <Text className="text-[13px] font-bold text-[#5D4037] mb-2 ml-1 uppercase">Phone Number</Text>
+                        <TextInput
+                            className="bg-slate-50 border border-[#D7CCC8] rounded-xl px-4 py-4 text-base text-[#4E342E] mb-5"
+                            placeholder="(555) 000-0000"
+                            placeholderTextColor="#94a3b8"
+                            keyboardType="phone-pad"
+                            value={formData.phone}
+                            onChangeText={(text) => setFormData({ ...formData, phone: text })}
+                        />
 
-                    <Text style={styles.label}>Zip Code (Optional)</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="e.g. 10001"
-                        placeholderTextColor="#94a3b8"
-                        keyboardType="number-pad"
-                        value={formData.zip}
-                        onChangeText={(text) => setFormData({ ...formData, zip: text })}
-                    />
-                </Animated.View>
+                        <Text className="text-[13px] font-bold text-[#5D4037] mb-2 ml-1 uppercase">Zip Code (Optional)</Text>
+                        <TextInput
+                            className="bg-slate-50 border border-[#D7CCC8] rounded-xl px-4 py-4 text-base text-[#4E342E] mb-5"
+                            placeholder="e.g. 10001"
+                            placeholderTextColor="#94a3b8"
+                            keyboardType="number-pad"
+                            value={formData.zip}
+                            onChangeText={(text) => setFormData({ ...formData, zip: text })}
+                        />
+                    </Animated.View>
 
-                <TouchableOpacity
-                    activeOpacity={0.8}
-                    onPress={handleSignup}
-                    style={[
-                        styles.primaryButton,
-                        (!formData.name || !formData.phone) && !isCollapsed && styles.disabledButton,
-                    ]}
-                    disabled={(!formData.name || !formData.phone || isLoading) && !isCollapsed}
-                >
-                    {isLoading ? (
-                        <ActivityIndicator color="#fff" />
-                    ) : (
-                        <Text style={styles.primaryButtonText}>Sign Me Up</Text>
-                    )}
-                </TouchableOpacity>
+                    <TouchableOpacity
+                        activeOpacity={0.8}
+                        onPress={handleSignup}
+                        className={`rounded-[14px] py-[18px] items-center ${
+                            isPrimaryDisabled ? 'bg-slate-300' : 'bg-[#F57C00]'
+                        }`}
+                        style={{
+                            shadowColor: '#F57C00',
+                            shadowOffset: { width: 0, height: 4 },
+                            shadowOpacity: isPrimaryDisabled ? 0 : 0.2,
+                            shadowRadius: 8,
+                            elevation: 4,
+                        }}
+                        disabled={isPrimaryDisabled}
+                    >
+                        {isLoading ? (
+                            <ActivityIndicator color="#fff" />
+                        ) : (
+                            <Text className="text-white text-[16px] font-bold">
+                                {hasSignedUp ? 'Sign up anyway' : 'Sign Me Up'}
+                            </Text>
+                        )}
+                    </TouchableOpacity>
+                </View>
+
+                <View className="flex-row items-center my-8 w-full">
+                    <View className="flex-1 h-px bg-[#D7CCC8]" />
+                    <Text className="mx-4 text-[14px] font-bold text-[#8D6E63]">OR</Text>
+                    <View className="flex-1 h-px bg-[#D7CCC8]" />
+                </View>
+
+                {renderNearbyOrgs()}
             </View>
-
-            <View style={styles.orSeparator}>
-                <View style={styles.orLine} />
-                <Text style={styles.orText}>OR</Text>
-                <View style={styles.orLine} />
-            </View>
-
-            {renderNearbyOrgs()}
-        </View>
-    );
+        );
+    };
 
     const renderMatches = () => (
-        <Animated.View style={[styles.content, { opacity: slideAnim }]}>
-            <Text style={styles.title}>Your Matches</Text>
-            <Text style={styles.subtitle}>
+        <Animated.View style={{ opacity: slideAnim }}>
+            <View className="px-6 items-center">
+                <Text className="text-[28px] font-extrabold text-[#4E342E] text-center mb-3">Your Matches</Text>
+                <Text className="text-[15px] text-[#6D4C41] text-center leading-[22px] mb-8">
                 Based on your location, these organizations are looking for volunteers. Tap to share your info!
-            </Text>
+                </Text>
+            </View>
 
-            <View style={{ width: '100%' }}>
+            <View className="w-full px-6">
                 {MATCHING_ORGS.map((org) => {
                     const isShared = sharingIds.includes(org.id);
                     return (
-                        <View key={org.id} style={styles.orgCard}>
-                            <View style={[styles.orgIcon, { backgroundColor: org.color + '20' }]}>
+                        <View
+                            key={org.id}
+                            className="flex-row bg-[#FFF8E1] rounded-[18px] px-4 py-4 mb-4 border border-[#FFE0B2]"
+                        >
+                            <View
+                                className="w-[52px] h-[52px] rounded-[14px] justify-center items-center"
+                                style={{ backgroundColor: org.color + '20' }}
+                            >
                                 <MaterialCommunityIcons name={org.icon as any} size={24} color={org.color} />
                             </View>
-                            <View style={{ flex: 1, marginLeft: 16 }}>
-                                <Text style={styles.orgName}>{org.name}</Text>
-                                <Text style={styles.orgType}>{org.type}</Text>
-                                <Text style={styles.orgDesc}>{org.desc}</Text>
+                            <View className="flex-1 ml-4">
+                                <Text className="text-[16px] font-bold text-[#4E342E] mb-0.5">{org.name}</Text>
+                                <Text className="text-[12px] font-semibold text-[#6D4C41] uppercase mb-2">{org.type}</Text>
+                                <Text className="text-[13px] text-[#5D4037] leading-[18px] mb-3">{org.desc}</Text>
 
                                 <TouchableOpacity
                                     onPress={() => !isShared && handleShareInfo(org.id)}
                                     disabled={isShared}
-                                    style={[styles.shareBtn, isShared && styles.sharedBtn]}
+                                    className={`self-start rounded-lg border px-3 py-2 ${
+                                        isShared ? 'bg-emerald-100 border-emerald-500' : 'bg-[#fff6e8] border-[#F57C00]'
+                                    }`}
                                 >
-                                    <Text style={[styles.shareBtnText, isShared && styles.sharedBtnText]}>
+                                    <Text
+                                        className={`text-[13px] font-bold ${
+                                            isShared ? 'text-[#166534]' : 'text-[#F57C00]'
+                                        }`}
+                                    >
                                         {isShared ? '✓ Info Shared' : 'Share My Contact Info'}
                                     </Text>
                                 </TouchableOpacity>
@@ -277,51 +348,68 @@ export default function VolunteerScreen() {
             {sharingIds.length > 0 && (
                 <TouchableOpacity
                     onPress={() => setStep('success')}
-                    style={[styles.primaryButton, { marginTop: 20 }]}
+                    className="mt-5 rounded-[14px] py-[18px] items-center bg-[#F57C00]"
+                    style={{
+                        shadowColor: '#F57C00',
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.2,
+                        shadowRadius: 8,
+                        elevation: 4,
+                    }}
                 >
-                    <Text style={styles.primaryButtonText}>I'm Done</Text>
+                    <Text className="text-white text-[16px] font-bold">I'm Done</Text>
                 </TouchableOpacity>
             )}
         </Animated.View>
     );
 
     const renderSuccess = () => (
-        <View style={[styles.content, { justifyContent: 'center', flex: 1 }]}>
-            <View style={styles.successIcon}>
+        <View className="px-6 flex-1 justify-center items-center">
+            <View className="w-[100px] h-[100px] rounded-full bg-[#f0fdf4] mb-6 justify-center items-center">
                 <MaterialCommunityIcons name="party-popper" size={60} color="#2E7D32" />
             </View>
-            <Text style={styles.title}>You're in the Network!</Text>
-            <Text style={[styles.subtitle, { textAlign: 'center' }]}>
+            <Text className="text-[28px] font-extrabold text-[#4E342E] text-center mb-3">You're in the Network!</Text>
+            <Text className="text-[15px] text-[#6D4C41] text-center leading-[22px] mb-8">
                 Thank you for stepping up. Matched organizations have been notified and will reach out to you via phone when help is needed.
             </Text>
 
             <TouchableOpacity
                 onPress={() => router.replace('/')}
-                style={[styles.primaryButton, { marginTop: 40, width: '100%' }]}
+                className="mt-10 w-full rounded-[14px] py-[18px] items-center bg-[#F57C00]"
+                style={{
+                    shadowColor: '#F57C00',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 8,
+                    elevation: 4,
+                }}
             >
-                <Text style={styles.primaryButtonText}>Back to Home</Text>
+                <Text className="text-white text-[16px] font-bold">Back to Home</Text>
             </TouchableOpacity>
         </View>
     );
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView className="flex-1 bg-[#fff6e8]">
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={{ flex: 1 }}
+                className="flex-1"
             >
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+                <View className="flex-row items-center justify-between px-5 py-2.5">
+                    <TouchableOpacity
+                        onPress={() => router.back()}
+                        className="w-10 h-10 rounded-full bg-[#FBE9E7] justify-center items-center"
+                    >
                         <Ionicons name="chevron-back" size={24} color="#1e293b" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Volunteer Network</Text>
-                    <View style={{ width: 40 }} />
+                    <Text className="text-[17px] font-bold text-[#4E342E]">Volunteer Network</Text>
+                    <View className="w-10" />
                 </View>
 
                 <ScrollView
                     ref={scrollViewRef}
-                    style={{ flex: 1 }}
-                    contentContainerStyle={{ flexGrow: 1 }}
+                    className="flex-1"
+                    contentContainerClassName="flex-grow"
                     showsVerticalScrollIndicator={false}
                     scrollEventThrottle={16}
                 >
@@ -335,210 +423,11 @@ export default function VolunteerScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff6e8',
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-    },
-    headerTitle: {
-        fontSize: 17,
-        fontWeight: '700',
-        color: '#4E342E',
-    },
-    backBtn: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: '#FBE9E7',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    content: {
-        padding: 24,
-        alignItems: 'center',
-    },
-    title: {
-        fontSize: 28,
-        fontWeight: '800',
-        color: '#4E342E',
-        textAlign: 'center',
-        marginBottom: 12,
-    },
-    subtitle: {
-        fontSize: 15,
-        color: '#6D4C41',
-        textAlign: 'center',
-        lineHeight: 22,
-        marginBottom: 32,
-    },
-    form: {
-        width: '100%',
-    },
-    label: {
-        fontSize: 13,
-        fontWeight: '700',
-        color: '#5D4037',
-        marginBottom: 8,
-        marginLeft: 4,
-        textTransform: 'uppercase',
-    },
-    input: {
-        backgroundColor: '#f8fafc',
-        borderWidth: 1,
-        borderColor: '#D7CCC8',
-        borderRadius: 12,
-        padding: 16,
-        fontSize: 16,
-        color: '#4E342E',
-        marginBottom: 20,
-    },
-    primaryButton: {
-        backgroundColor: '#F57C00',
-        borderRadius: 14,
-        padding: 18,
-        alignItems: 'center',
-        shadowColor: '#F57C00',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-        elevation: 4,
-    },
-    primaryButtonText: {
-        color: '#ffffff',
-        fontSize: 16,
-        fontWeight: '700',
-    },
-    disabledButton: {
-        backgroundColor: '#cbd5e1',
-        shadowOpacity: 0,
-    },
-    orgCard: {
-        flexDirection: 'row',
-        backgroundColor: '#FFF8E1',
-        borderRadius: 18,
-        padding: 16,
-        marginBottom: 16,
-        borderWidth: 1,
-        borderColor: '#FFE0B2',
-    },
-    orgIcon: {
-        width: 52,
-        height: 52,
-        borderRadius: 14,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    orgName: {
-        fontSize: 16,
-        fontWeight: '700',
-        color: '#4E342E',
-        marginBottom: 2,
-    },
-    orgType: {
-        fontSize: 12,
-        fontWeight: '600',
-        color: '#6D4C41',
-        textTransform: 'uppercase',
-        marginBottom: 8,
-    },
-    orgDesc: {
-        fontSize: 13,
-        color: '#5D4037',
-        lineHeight: 18,
-        marginBottom: 12,
-    },
-    shareBtn: {
-        backgroundColor: '#fff6e8',
-        borderWidth: 1,
-        borderColor: '#F57C00',
-        borderRadius: 8,
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        alignSelf: 'flex-start',
-    },
-    shareBtnText: {
-        color: '#F57C00',
-        fontSize: 13,
-        fontWeight: '700',
-    },
-    sharedBtn: {
-        backgroundColor: '#dcfce7',
-        borderColor: '#22c55e',
-    },
-    sharedBtnText: {
-        color: '#166534',
-    },
-    successIcon: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        backgroundColor: '#f0fdf4',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 24,
-    },
-    nearbySection: {
-        width: '100%',
-        marginTop: 40,
-        marginBottom: 20,
-    },
-    nearbyTitle: {
-        fontSize: 16,
-        fontWeight: '700',
-        color: '#4E342E',
-        marginBottom: 16,
-        textAlign: 'left',
-    },
-    nearbyGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'flex-start',
-        width: '100%',
-        gap: 12,
-    },
     orgSquareCard: {
-        alignItems: 'center',
         width: (width - 48 - 24) / 3, // Maintains size but now respects gap
-        marginBottom: 20,
     },
     imagePlaceholder: {
         width: (width - 48 - 24) / 3,
         height: (width - 48 - 24) / 3,
-        borderRadius: 16,
-        marginBottom: 8,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: 'rgba(0,0,0,0.05)',
-    },
-    orgSquareName: {
-        fontSize: 12,
-        fontWeight: '600',
-        color: '#6D4C41',
-        textAlign: 'center',
-        width: '100%',
-    },
-    orSeparator: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginVertical: 32,
-        width: '100%',
-    },
-    orLine: {
-        flex: 1,
-        height: 1,
-        backgroundColor: '#D7CCC8',
-    },
-    orText: {
-        fontSize: 14,
-        fontWeight: '700',
-        color: '#8D6E63',
-        marginHorizontal: 16,
     },
 });
