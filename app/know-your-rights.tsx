@@ -153,7 +153,7 @@ const AnimatedSubPoints = ({ subPoints }: AnimatedSubPointsProps) => {
                         <View className="mr-2.5 mt-0.5">
                             <MaterialCommunityIcons name="check" size={14} color="rgba(255,255,255,0.6)" />
                         </View>
-                        <Text className="flex-1 text-sm leading-5" style={{ color: 'rgba(255,255,255,0.85)' }}>{sub}</Text>
+                        <Text className="flex-1 text-sm leading-5 text-[rgba(255,255,255,0.85)]">{sub}</Text>
                     </View>
                 ))}
             </View>
@@ -223,7 +223,7 @@ export default function KnowYourRightsScreen() {
                         </View>
 
                         {/* Step label */}
-                        <Text className="mb-2 text-xs font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                        <Text className="mb-2 text-xs font-bold uppercase tracking-widest text-[rgba(255,255,255,0.6)]">
                             Step {SLIDES.indexOf(item) + 1} of {SLIDES.length}
                         </Text>
 
@@ -240,7 +240,7 @@ export default function KnowYourRightsScreen() {
                                         <View className="mr-3.5 mt-0.5 h-[22px] w-[22px] items-center justify-center rounded-[11px] bg-white/20">
                                             <Text className="text-[11px] font-bold text-white">{i + 1}</Text>
                                         </View>
-                                        <Text className="flex-1 text-[15px] leading-[22px]" style={{ color: 'rgba(255,255,255,0.92)' }}>
+                                        <Text className="flex-1 text-[15px] leading-[22px] text-[rgba(255,255,255,0.92)]">
                                             {point}
                                         </Text>
                                     </View>
@@ -262,7 +262,7 @@ export default function KnowYourRightsScreen() {
                                                 <Text className="text-[11px] font-bold" style={{ color: item.color }}>Website</Text>
                                             </TouchableOpacity>
                                         </View>
-                                        <Text className="text-xs leading-[18px]" style={{ color: 'rgba(255,255,255,0.8)' }}>{res.description}</Text>
+                                        <Text className="text-xs leading-[18px] text-[rgba(255,255,255,0.8)]">{res.description}</Text>
                                     </View>
                                 ))}
                             </View>
