@@ -30,12 +30,12 @@ const OrganizationsSection = ({
   const ORG_CARD_WIDTH = 202; // 190 + 12 gap
 
   return (
-    <View style={{ marginBottom: 20 }}>
-      <Text style={{ color: '#4E342E', fontSize: 18, fontWeight: '700', paddingHorizontal: 20, marginBottom: 12 }}>
+    <View className="mb-5">
+      <Text className="mb-3 px-5 text-[18px] font-bold text-[#4E342E]">
         Organizations
       </Text>
       {isLoadingOrgs ? (
-        <ActivityIndicator color="#C2185B" style={{ marginVertical: 10 }} />
+        <ActivityIndicator color="#C2185B" className="my-2.5" />
       ) : (
         <ScrollView
           horizontal
@@ -113,17 +113,23 @@ const OrganizationsSection = ({
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 Linking.openURL(org.url);
               }}
-              style={{ width: 190, backgroundColor: org.bg, borderWidth: 1, borderColor: org.border, borderRadius: 16, padding: 14 }}
+              className="w-[190px] rounded-2xl border p-3.5"
+              style={{ backgroundColor: org.bg, borderColor: org.border }}
             >
-              <View style={{ position: 'absolute', top: 10, right: 10, backgroundColor: org.scopeColor, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 }}>
-                <Text style={{ color: '#fff', fontSize: 9, fontWeight: '700' }}>{org.scope.toUpperCase()}</Text>
+              <View
+                className="absolute right-2.5 top-2.5 rounded px-1.5 py-0.5"
+                style={{ backgroundColor: org.scopeColor }}
+              >
+                <Text className="text-[9px] font-bold text-white">{org.scope.toUpperCase()}</Text>
               </View>
 
-              <MaterialCommunityIcons name={org.icon as any} size={26} color={org.scopeColor} style={{ marginBottom: 8 }} />
-              <Text style={{ color: '#4E342E', fontSize: 14, fontWeight: '700', marginBottom: 6, paddingRight: 60 }}>{org.name}</Text>
-              <Text style={{ color: '#6D4C41', fontSize: 12, lineHeight: 17, marginBottom: 8 }}>{org.desc}</Text>
+              <View className="mb-2">
+                <MaterialCommunityIcons name={org.icon as any} size={26} color={org.scopeColor} />
+              </View>
+              <Text className="mb-1.5 pr-[60px] text-[14px] font-bold text-[#4E342E]">{org.name}</Text>
+              <Text className="mb-2 text-[12px] leading-[17px] text-[#6D4C41]">{org.desc}</Text>
 
-              <View style={{ position: 'absolute', bottom: 12, right: 12 }}>
+              <View className="absolute bottom-3 right-3">
                 <MaterialCommunityIcons name="chevron-right" size={18} color={org.scopeColor} />
               </View>
             </TouchableOpacity>

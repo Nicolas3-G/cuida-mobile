@@ -18,16 +18,16 @@ const GetOrganizedSection = ({
   const EVENT_CARD_WIDTH = 222; // 210 + 12 gap
 
   return (
-    <View style={{ marginBottom: 20 }}>
-      <Text style={{ color: '#4E342E', fontSize: 18, fontWeight: '700', paddingHorizontal: 20, marginBottom: 4 }}>
+    <View className="mb-5">
+      <Text className="mb-1 px-5 text-[18px] font-bold text-[#4E342E]">
         Get Organized
       </Text>
-      <Text style={{ color: '#6D4C41', fontSize: 13, paddingHorizontal: 20, marginBottom: 12 }}>
+      <Text className="mb-3 px-5 text-[13px] text-[#6D4C41]">
         Protests & events happening near you
       </Text>
 
       {isLoadingEvents ? (
-        <ActivityIndicator color="#C2185B" style={{ marginVertical: 10 }} />
+        <ActivityIndicator color="#C2185B" className="my-2.5" />
       ) : (
         <ScrollView
           horizontal
@@ -50,37 +50,52 @@ const GetOrganizedSection = ({
               onPress={() => {
                 if (event.url) Linking.openURL(event.url);
               }}
-              style={{ width: 210, backgroundColor: event.bg, borderWidth: 1, borderColor: event.border, borderRadius: 16, padding: 14 }}
+              className="w-[210px] rounded-2xl border p-3.5"
+              style={{ backgroundColor: event.bg, borderColor: event.border }}
             >
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-                <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: event.color, justifyContent: 'center', alignItems: 'center' }}>
+              <View className="mb-2.5 flex-row items-start justify-between">
+                <View
+                  className="h-11 w-11 items-center justify-center rounded-xl"
+                  style={{ backgroundColor: event.color }}
+                >
                   <MaterialCommunityIcons name={event.icon as any} size={22} color="#ffffff" />
                 </View>
                 {typeof event.attendees === 'number' && event.attendees > 0 && (
-                  <View style={{ backgroundColor: event.color + '22', borderRadius: 8, paddingHorizontal: 7, paddingVertical: 3, flexDirection: 'row', alignItems: 'center' }}>
-                    <MaterialCommunityIcons name="account-group-outline" size={12} color={event.color} style={{ marginRight: 3 }} />
-                    <Text style={{ color: event.color, fontSize: 11, fontWeight: '700' }}>{event.attendees.toLocaleString()}</Text>
+                  <View
+                    className="flex-row items-center rounded-lg px-1.5 py-0.5"
+                    style={{ backgroundColor: event.color + '22' }}
+                  >
+                    <View className="mr-0.5">
+                      <MaterialCommunityIcons name="account-group-outline" size={12} color={event.color} />
+                    </View>
+                    <Text className="text-[11px] font-bold" style={{ color: event.color }}>{event.attendees.toLocaleString()}</Text>
                   </View>
                 )}
               </View>
 
-              <Text style={{ color: '#4E342E', fontSize: 13, fontWeight: '700', lineHeight: 18, marginBottom: 8 }}>
+              <Text className="mb-2 text-[13px] font-bold leading-[18px] text-[#4E342E]">
                 {event.title}
               </Text>
 
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
-                <MaterialCommunityIcons name="calendar-outline" size={12} color="#6D4C41" style={{ marginRight: 4 }} />
-                <Text style={{ color: '#6D4C41', fontSize: 11 }}>{event.date}</Text>
+              <View className="mb-0.5 flex-row items-center">
+                <View className="mr-1">
+                  <MaterialCommunityIcons name="calendar-outline" size={12} color="#6D4C41" />
+                </View>
+                <Text className="text-[11px] text-[#6D4C41]">{event.date}</Text>
               </View>
               {event.time ? (
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
-                  <MaterialCommunityIcons name="clock-outline" size={12} color="#6D4C41" style={{ marginRight: 4 }} />
-                  <Text style={{ color: '#6D4C41', fontSize: 11 }}>{event.time}</Text>
+                <View className="mb-0.5 flex-row items-center">
+                  <View className="mr-1">
+                    <MaterialCommunityIcons name="clock-outline" size={12} color="#6D4C41" />
+                  </View>
+                  <Text className="text-[11px] text-[#6D4C41]">{event.time}</Text>
                 </View>
               ) : null}
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <MaterialCommunityIcons name="map-marker-outline" size={12} color="#6D4C41" style={{ marginRight: 4 }} />
-                <Text style={{ color: '#6D4C41', fontSize: 11 }}>{event.location}</Text>
+              <View className="flex-row items-center">
+                <View className="mr-1">
+                  <MaterialCommunityIcons name="map-marker-outline" size={12} color="#6D4C41" />
+                </View>
+                <Text className="text-[11px] text-[#6D4C41]">{event.location}</Text>
               </View>
             </TouchableOpacity>
           ))}

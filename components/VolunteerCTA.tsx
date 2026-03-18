@@ -11,38 +11,20 @@ const VolunteerCTA = ({ onPress }: VolunteerCTAProps) => {
     <TouchableOpacity
       activeOpacity={0.85}
       onPress={onPress}
-      style={{
-        marginHorizontal: 20,
-        marginBottom: 20,
-        backgroundColor: '#2E7D32',
-        borderRadius: 16,
-        padding: 20,
-        flexDirection: 'row',
-        alignItems: 'center',
-      }}
+      className="mx-5 mb-5 flex-row items-center rounded-2xl bg-[#2E7D32] p-5"
     >
-      <View
-        style={{
-          width: 48,
-          height: 48,
-          borderRadius: 14,
-          backgroundColor: 'rgba(255,255,255,0.2)',
-          justifyContent: 'center',
-          alignItems: 'center',
-          marginRight: 16,
-        }}
-      >
+      <View className="mr-4 h-12 w-12 items-center justify-center rounded-[14px] bg-white/20">
         <MaterialCommunityIcons name="handshake-outline" size={26} color="#ffffff" />
       </View>
-      <View style={{ flex: 1 }}>
-        <Text style={{ color: '#ffffff', fontSize: 16, fontWeight: '700', marginBottom: 4 }}>
+      <View className="flex-1">
+        <Text className="mb-1 text-[16px] font-bold text-white">
           Volunteer
         </Text>
-        <Text style={{ color: '#A5D6A7', fontSize: 13, lineHeight: 18 }}>
+        <Text className="text-[13px] leading-[18px] text-[#A5D6A7]">
           Find organizations that need help or join our list to be contacted!
         </Text>
       </View>
-      <Text style={{ color: '#A5D6A7', fontSize: 20, marginLeft: 8 }}>›</Text>
+      <Text className="ml-2 text-[20px] text-[#A5D6A7]">›</Text>
     </TouchableOpacity>
   );
 };
