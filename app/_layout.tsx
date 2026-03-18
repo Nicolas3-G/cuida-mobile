@@ -48,22 +48,22 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={CuidaTheme}>
-      <View style={{ flex: 1 }}>
+      <View className="flex-1">
         <Stack>
           <Stack.Screen
             name="index"
             options={{
               title: '',
-              headerStyle: { backgroundColor: '#fff6e8' },
+              headerStyle: { backgroundColor: CuidaTheme.colors.background },
               headerShadowVisible: false,
               headerLeft: () => (
-                <Text style={{ color: '#C2185B', fontSize: 24, fontWeight: '700', marginLeft: 4 }}>
+                <Text className="ml-1 text-2xl font-bold text-[#C2185B]">
                   Cuida
                 </Text>
               ),
               headerRight: () => (
                 <Link href="/settings" asChild>
-                  <TouchableOpacity activeOpacity={0.7} style={{ marginRight: 4, padding: 4 }}>
+                  <TouchableOpacity activeOpacity={0.7} className="mr-1 p-1">
                     <MaterialCommunityIcons name="cog-outline" size={24} color="#6D4C41" />
                   </TouchableOpacity>
                 </Link>
