@@ -16,7 +16,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 
 
@@ -57,6 +57,11 @@ const NEARBY_ORGS = [
     { id: '5', name: 'Legal Shield', color: '#FBE9E7' },
 ];
 
+const isValidPhone = (value: string) => {
+    const digits = value.replace(/\D/g, '');
+    return digits.length >= 10 && digits.length <= 15;
+};
+
 export default function VolunteerScreen() {
     const router = useRouter();
     const [step, setStep] = useState<'signup' | 'matches' | 'success'>('signup');
@@ -65,6 +70,7 @@ export default function VolunteerScreen() {
     const [isCollapsed, setIsCollapsed] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const [hasSignedUp, setHasSignedUp] = useState(false);
+    const [phoneError, setPhoneError] = useState<string | null>(null);
 
     const slideAnim = useRef(new Animated.Value(0)).current;
     const collapseAnim = useRef(new Animated.Value(0)).current; // 1 = expanded, 0 = collapsed
@@ -92,17 +98,28 @@ export default function VolunteerScreen() {
             return;
         }
 
-        if (!formData.name || !formData.phone) return;
+        if (!formData.name || !formData.phone || !isValidPhone(formData.phone)) {
+            if (!isValidPhone(formData.phone)) {
+                setPhoneError('The phone number is not valid.');
+            }
+            return;
+        }
         if (isLoading) return;
 
         try {
             setIsLoading(true);
-            await addDoc(collection(db, 'volunteers'), {
+
+            const volunteersCollection = collection(db, 'volunteers');
+            const volunteerDocRef = doc(volunteersCollection);
+
+            await setDoc(volunteerDocRef, {
                 name: formData.name.trim(),
                 phone: formData.phone.trim(),
                 zip: formData.zip.trim() || null,
-                createdAt: serverTimestamp(),
+                dateCreated: serverTimestamp(),
+                dateModified: serverTimestamp(),
                 source: 'app-volunteer-screen',
+                uuid: volunteerDocRef.id,
             });
 
             await AsyncStorage.setItem('hasSignedUpVolunteer', 'true');
@@ -241,13 +258,23 @@ export default function VolunteerScreen() {
 
                         <Text className="text-[13px] font-bold text-[#5D4037] mb-2 ml-1 uppercase">Phone Number</Text>
                         <TextInput
-                            className="bg-slate-50 border border-[#D7CCC8] rounded-xl px-4 py-4 text-base text-[#4E342E] mb-5"
+                            className="bg-slate-50 border border-[#D7CCC8] rounded-xl px-4 py-4 text-base text-[#4E342E] mb-2"
                             placeholder="(555) 000-0000"
                             placeholderTextColor="#94a3b8"
                             keyboardType="phone-pad"
                             value={formData.phone}
-                            onChangeText={(text) => setFormData({ ...formData, phone: text })}
+                            onChangeText={(text) => {
+                                setFormData({ ...formData, phone: text });
+                                if (phoneError && isValidPhone(text)) {
+                                    setPhoneError(null);
+                                }
+                            }}
                         />
+                        {phoneError && (
+                            <Text className="text-[12px] text-red-600 mb-4">
+                                {phoneError}
+                            </Text>
+                        )}
 
                         <Text className="text-[13px] font-bold text-[#5D4037] mb-2 ml-1 uppercase">Zip Code (Optional)</Text>
                         <TextInput
