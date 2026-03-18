@@ -120,15 +120,15 @@ export default function HomeScreen() {
 
   if (isCheckingOnboarding) {
     return (
-      <View style={{ flex: 1, backgroundColor: '#fff6e8', alignItems: 'center', justifyContent: 'center' }}>
+      <View className="flex-1 items-center justify-center bg-[#fff6e8]">
         <ActivityIndicator size="large" color="#C2185B" />
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff6e8' }} edges={['bottom']}>
-      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+    <SafeAreaView className="flex-1 bg-[#fff6e8]" edges={['bottom']}>
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
 
         {/* ── Activity Near You ── */}
         <ActivityNearYouSection
