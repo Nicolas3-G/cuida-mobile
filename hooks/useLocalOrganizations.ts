@@ -12,6 +12,10 @@ export interface LocalOrganization {
   bg: string;
   border: string;
   url: string | null;
+  volunteerOpportunities?: {
+    lookingForVolunteers?: boolean;
+    volunteeringLink?: string | null;
+  };
 }
 
 export function useLocalOrganizations(city: string | null) {
@@ -51,6 +55,7 @@ export function useLocalOrganizations(city: string | null) {
                 bg: '#E8F5E9',
                 border: '#A5D6A7',
                 url: org.url || org.website || null,
+                volunteerOpportunities: org.volunteerOpportunities || undefined,
               };
             });
             setOrganizations(mapped);
