@@ -320,14 +320,14 @@ export default function SettingsScreen() {
 
     if (isLoading) {
         return (
-            <SafeAreaView style={{ flex: 1, backgroundColor: '#fff6e8', alignItems: 'center', justifyContent: 'center' }}>
+            <SafeAreaView className="flex-1 items-center justify-center bg-[#fff6e8]">
                 <ActivityIndicator size="large" color="#C2185B" />
             </SafeAreaView>
         );
     }
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: '#fff6e8' }}>
+        <SafeAreaView className="flex-1 bg-[#fff6e8]">
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className="flex-1"
@@ -360,7 +360,9 @@ export default function SettingsScreen() {
                             className="flex-row items-center justify-between p-4 border-b border-slate-100"
                         >
                             <View className="flex-row items-center">
-                                <MaterialCommunityIcons name="earth" size={20} color="#6D4C41" style={{ marginRight: 12 }} />
+                                <View className="mr-3">
+                                    <MaterialCommunityIcons name="earth" size={20} color="#6D4C41" />
+                                </View>
                                 <Text className="text-base font-semibold text-slate-700">Language</Text>
                             </View>
                             <View className="flex-row items-center">
@@ -402,7 +404,9 @@ export default function SettingsScreen() {
                             className="flex-row items-center justify-between p-4 border-b border-slate-100"
                         >
                             <View className="flex-row items-center">
-                                <MaterialCommunityIcons name="map-marker-outline" size={20} color="#6D4C41" style={{ marginRight: 12 }} />
+                                <View className="mr-3">
+                                    <MaterialCommunityIcons name="map-marker-outline" size={20} color="#6D4C41" />
+                                </View>
                                 <Text className="text-base font-semibold text-slate-700">Location</Text>
                             </View>
                             <View className="flex-row items-center">
@@ -422,12 +426,13 @@ export default function SettingsScreen() {
                             className="flex-row items-center justify-between p-4 border-b border-slate-100"
                         >
                             <View className="flex-row items-center">
-                                <MaterialCommunityIcons
-                                    name={vibrationEnabled ? "vibrate" : "vibrate-off"}
-                                    size={20}
-                                    color="#6D4C41"
-                                    style={{ marginRight: 12 }}
-                                />
+                                <View className="mr-3">
+                                    <MaterialCommunityIcons
+                                        name={vibrationEnabled ? "vibrate" : "vibrate-off"}
+                                        size={20}
+                                        color="#6D4C41"
+                                    />
+                                </View>
                                 <Text className="text-base font-semibold text-slate-700">Vibrations</Text>
                             </View>
                             <View className="flex-row items-center">
@@ -451,7 +456,9 @@ export default function SettingsScreen() {
                             className="flex-row items-center justify-between p-4 border-b border-slate-100"
                         >
                             <View className="flex-row items-center">
-                                <MaterialCommunityIcons name="refresh" size={20} color="#6D4C41" style={{ marginRight: 12 }} />
+                                <View className="mr-3">
+                                    <MaterialCommunityIcons name="refresh" size={20} color="#6D4C41" />
+                                </View>
                                 <Text className="text-base font-semibold text-slate-700">Refresh data</Text>
                             </View>
                             <Text className="text-slate-400 text-lg">›</Text>
@@ -464,7 +471,9 @@ export default function SettingsScreen() {
                             className="flex-row items-center justify-between p-4"
                         >
                             <View className="flex-row items-center">
-                                <MaterialCommunityIcons name="alert-outline" size={20} color="#6D4C41" style={{ marginRight: 12 }} />
+                                <View className="mr-3">
+                                    <MaterialCommunityIcons name="alert-outline" size={20} color="#6D4C41" />
+                                </View>
                                 <Text className="text-base font-semibold text-slate-700">Reset onboarding</Text>
                             </View>
                             <Text className="text-slate-400 text-lg">›</Text>
@@ -477,7 +486,9 @@ export default function SettingsScreen() {
                             className="flex-row items-center justify-between p-4 border-t border-slate-100"
                         >
                             <View className="flex-row items-center">
-                                <MaterialCommunityIcons name="message-text-outline" size={20} color="#6D4C41" style={{ marginRight: 12 }} />
+                                <View className="mr-3">
+                                    <MaterialCommunityIcons name="message-text-outline" size={20} color="#6D4C41" />
+                                </View>
                                 <Text className="text-base font-semibold text-slate-700">Send feedback</Text>
                             </View>
                             <Text className="text-slate-400 text-lg">›</Text>
@@ -485,23 +496,13 @@ export default function SettingsScreen() {
 
                         {/* Location Dropdown Content */}
                         {expandedItem === 'location' && (
-                            <View style={{ backgroundColor: '#fff6e8', borderTopWidth: 1, borderTopColor: '#f1f5f9', padding: 16 }}>
+                            <View className="border-t border-slate-200 bg-[#fff6e8] p-4">
                                 <Text className="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">
                                     US State
                                 </Text>
-                                <View style={{ marginBottom: 8 }}>
+                                <View className="mb-2">
                                     <TextInput
-                                        style={{
-                                            width: '100%',
-                                            backgroundColor: '#ffffff',
-                                            borderRadius: 12,
-                                            paddingHorizontal: 14,
-                                            paddingVertical: 10,
-                                            fontSize: 16,
-                                            color: '#1e293b',
-                                            borderWidth: 1,
-                                            borderColor: '#e2e8f0',
-                                        }}
+                                        className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-base text-slate-800"
                                         placeholder="Type your state (e.g. California)"
                                         placeholderTextColor="#94a3b8"
                                         value={locationStateInput}
@@ -513,26 +514,16 @@ export default function SettingsScreen() {
                                         activeOpacity={0.8}
                                         onPress={handleUseMyLocation}
                                         disabled={isLocating}
-                                        style={{
-                                            marginTop: 8,
-                                            alignSelf: 'flex-start',
-                                            flexDirection: 'row',
-                                            alignItems: 'center',
-                                            paddingVertical: 8,
-                                            paddingHorizontal: 12,
-                                            borderRadius: 999,
-                                            borderWidth: 1,
-                                            borderColor: '#cbd5e1',
-                                            backgroundColor: '#f8fafc',
-                                            opacity: isLocating ? 0.7 : 1,
-                                        }}
+                                        className={`mt-2 flex-row items-center self-start rounded-full border border-slate-300 bg-slate-50 py-2 px-3 ${isLocating ? 'opacity-70' : 'opacity-100'}`}
                                     >
                                         {isLocating ? (
                                             <ActivityIndicator size="small" color="#475569" />
                                         ) : (
                                             <>
-                                                <Ionicons name="locate-outline" size={16} color="#475569" style={{ marginRight: 6 }} />
-                                                <Text style={{ fontSize: 13, fontWeight: '600', color: '#475569' }}>
+                                                <View className="mr-1.5">
+                                                    <Ionicons name="locate-outline" size={16} color="#475569" />
+                                                </View>
+                                                <Text className="text-[13px] font-semibold text-slate-600">
                                                     Use my location
                                                 </Text>
                                             </>
@@ -540,29 +531,15 @@ export default function SettingsScreen() {
                                     </TouchableOpacity>
 
                                     {showSuggestions && (
-                                        <View
-                                            style={{
-                                                marginTop: 8,
-                                                backgroundColor: '#ffffff',
-                                                borderRadius: 12,
-                                                borderWidth: 1,
-                                                borderColor: '#e2e8f0',
-                                                overflow: 'hidden',
-                                            }}
-                                        >
+                                        <View className="mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white">
                                             {filteredStates.map(state => (
                                                 <TouchableOpacity
                                                     key={state.code}
                                                     activeOpacity={0.7}
                                                     onPress={() => handleSelectState(state)}
-                                                    style={{
-                                                        paddingVertical: 10,
-                                                        paddingHorizontal: 14,
-                                                        borderBottomWidth: 1,
-                                                        borderBottomColor: '#f1f5f9',
-                                                    }}
+                                                    className="border-b border-slate-100 px-3.5 py-2.5"
                                                 >
-                                                    <Text style={{ fontSize: 15, color: '#334155' }}>{state.name}</Text>
+                                                    <Text className="text-[15px] text-slate-700">{state.name}</Text>
                                                 </TouchableOpacity>
                                             ))}
                                         </View>
@@ -570,69 +547,28 @@ export default function SettingsScreen() {
                                 </View>
 
                                 {resolvedStateCode && (
-                                    <View style={{ marginTop: 8 }}>
-                                        <View
-                                            style={{
-                                                flexDirection: 'row',
-                                                alignItems: 'center',
-                                                justifyContent: 'flex-start',
-                                                marginBottom: 8,
-                                                marginLeft: 2,
-                                                gap: 6,
-                                            }}
-                                        >
-                                            <Text
-                                                style={{
-                                                    fontSize: 12,
-                                                    fontWeight: '700',
-                                                    color: '#475569',
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: 1,
-                                                }}
-                                            >
+                                    <View className="mt-2">
+                                        <View className="mb-2 ml-0.5 flex-row items-center justify-start gap-1.5">
+                                            <Text className="text-xs font-bold uppercase tracking-wide text-slate-600">
                                                 City options
                                             </Text>
                                             <TouchableOpacity
                                                 onPress={() => setShowCityInfo(prev => !prev)}
                                                 activeOpacity={0.7}
-                                                style={{
-                                                    width: 20,
-                                                    height: 20,
-                                                    borderRadius: 10,
-                                                    justifyContent: 'center',
-                                                    alignItems: 'center',
-                                                    backgroundColor: '#FFEDD5',
-                                                }}
+                                                className="h-5 w-5 items-center justify-center rounded-full bg-orange-100"
                                             >
                                                 <Ionicons name="information-circle-outline" size={14} color="#F97316" />
                                             </TouchableOpacity>
                                         </View>
                                         {showCityInfo && (
-                                            <View
-                                                style={{
-                                                    borderWidth: 1,
-                                                    borderColor: '#e2e8f0',
-                                                    backgroundColor: '#f8fafc',
-                                                    borderRadius: 12,
-                                                    paddingHorizontal: 12,
-                                                    paddingVertical: 10,
-                                                    marginBottom: 10,
-                                                    marginLeft: 2,
-                                                    marginRight: 2,
-                                                }}
-                                            >
-                                                <Text
-                                                    style={{
-                                                        fontSize: 13,
-                                                        color: '#64748b',
-                                                    }}
-                                                >
+                                            <View className="mx-0.5 mb-2.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                                                <Text className="text-[13px] text-slate-500">
                                                     We currently only support these cities. If you prefer state-wide data,
                                                     you can choose &quot;State level only&quot; instead.
                                                 </Text>
                                             </View>
                                         )}
-                                        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                                        <View className="flex-row flex-wrap">
                                             {(STATE_CITIES[resolvedStateCode as keyof typeof STATE_CITIES] || []).map(city => {
                                                 const isSelected = city === selectedCity && !stateLevelOnly;
                                                 return (
@@ -643,23 +579,10 @@ export default function SettingsScreen() {
                                                             setStateLevelOnly(false);
                                                         }}
                                                         activeOpacity={0.8}
-                                                        style={{
-                                                            paddingVertical: 6,
-                                                            paddingHorizontal: 12,
-                                                            borderRadius: 999,
-                                                            borderWidth: 1,
-                                                            borderColor: isSelected ? '#F57C00' : '#e2e8f0',
-                                                            backgroundColor: isSelected ? '#FFF3E0' : '#ffffff',
-                                                            marginRight: 8,
-                                                            marginBottom: 8,
-                                                        }}
+                                                        className={`mb-2 mr-2 rounded-full border py-1.5 px-3 ${isSelected ? 'border-orange-600 bg-orange-50' : 'border-slate-200 bg-white'}`}
                                                     >
                                                         <Text
-                                                            style={{
-                                                                fontSize: 13,
-                                                                fontWeight: '600',
-                                                                color: isSelected ? '#BF360C' : '#475569',
-                                                            }}
+                                                            className={`text-[13px] font-semibold ${isSelected ? 'text-orange-900' : 'text-slate-600'}`}
                                                         >
                                                             {city}
                                                         </Text>
@@ -673,23 +596,10 @@ export default function SettingsScreen() {
                                                 setStateLevelOnly(true);
                                                 setSelectedCity('');
                                             }}
-                                            style={{
-                                                marginTop: 8,
-                                                alignSelf: 'flex-start',
-                                                paddingVertical: 6,
-                                                paddingHorizontal: 12,
-                                                borderRadius: 999,
-                                                borderWidth: 1,
-                                                borderColor: stateLevelOnly ? '#F57C00' : '#e2e8f0',
-                                                backgroundColor: stateLevelOnly ? '#FFF3E0' : '#ffffff',
-                                            }}
+                                            className={`mt-2 self-start rounded-full border py-1.5 px-3 ${stateLevelOnly ? 'border-orange-600 bg-orange-50' : 'border-slate-200 bg-white'}`}
                                         >
                                             <Text
-                                                style={{
-                                                    fontSize: 13,
-                                                    fontWeight: '600',
-                                                    color: stateLevelOnly ? '#BF360C' : '#475569',
-                                                }}
+                                                className={`text-[13px] font-semibold ${stateLevelOnly ? 'text-orange-900' : 'text-slate-600'}`}
                                             >
                                                 State level only
                                             </Text>
@@ -697,19 +607,14 @@ export default function SettingsScreen() {
                                     </View>
                                 )}
 
-                                <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 16 }}>
+                                <View className="mt-4 flex-row justify-end">
                                     <TouchableOpacity
                                         activeOpacity={0.7}
                                         onPress={handleSaveLocation}
                                         disabled={!locationStateInput.trim()}
-                                        style={{
-                                            paddingVertical: 10,
-                                            paddingHorizontal: 18,
-                                            borderRadius: 12,
-                                            backgroundColor: locationStateInput.trim() ? '#F57C00' : '#cbd5e1',
-                                        }}
+                                        className={`rounded-xl py-2.5 px-[18px] ${locationStateInput.trim() ? 'bg-orange-600' : 'bg-slate-300'}`}
                                     >
-                                        <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 14 }}>Save</Text>
+                                        <Text className="text-sm font-bold text-white">Save</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
