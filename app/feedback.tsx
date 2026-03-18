@@ -20,11 +20,11 @@ export default function FeedbackScreen() {
     try {
       setIsSubmitting(true);
       const feedbackRef = doc(collection(db, 'feedback'));
-      const id = feedbackRef.id;
+      const uuid = feedbackRef.id;
       const timestamp = serverTimestamp();
 
       await setDoc(feedbackRef, {
-        id,
+        uuid,
         type: feedbackType,
         subject: subject.trim() || null,
         message: message.trim(),
