@@ -350,7 +350,19 @@ export default function LocationScreen() {
                         activeOpacity={0.8}
                         onPress={handleContinue}
                         disabled={!location.trim() || isSaving}
-                        className={`w-full flex-row items-center justify-center rounded-2xl py-[18px] ${location.trim() ? 'bg-orange-600 shadow-md' : 'bg-slate-300'}`}
+                        className={`w-full flex-row items-center justify-center rounded-2xl py-[18px] ${location.trim() ? 'bg-orange-600' : 'bg-slate-300'}`}
+                        // Use regular style here for shadow because tailwind shadow was crashing the app
+                        style={
+                            location.trim()
+                                ? {
+                                      shadowColor: '#F57C00',
+                                      shadowOffset: { width: 0, height: 4 },
+                                      shadowOpacity: 0.2,
+                                      shadowRadius: 8,
+                                      elevation: 4,
+                                  }
+                                : undefined
+                        }
                     >
                         {isSaving ? (
                             <ActivityIndicator color="#fff" />
