@@ -12,12 +12,14 @@ import {
     KeyboardAvoidingView,
     Platform,
     ActivityIndicator,
+    Linking,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
+import { useLocalOrganizations } from '../hooks/useLocalOrganizations';
 
 
 const { width } = Dimensions.get('window');
@@ -50,16 +52,64 @@ const MATCHING_ORGS = [
 ];
 
 const NEARBY_ORGS = [
-    { id: '1', name: 'ACLU local', color: '#E3F2FD' },
-    { id: '2', name: 'CASA', color: '#F3E5F5' },
-    { id: '3', name: 'Make the Road', color: '#E8F5E9' },
-    { id: '4', name: 'Alianza', color: '#FFF3E0' },
-    { id: '5', name: 'Legal Shield', color: '#FBE9E7' },
+    {
+        id: '1',
+        name: 'ACLU local',
+        icon: 'bank-outline',
+        desc: 'Civil liberties and immigrant rights support in your area.',
+    },
+    {
+        id: '2',
+        name: 'CASA',
+        icon: 'account-group-outline',
+        desc: 'Local immigrant advocacy and community organizing.',
+    },
+    {
+        id: '3',
+        name: 'Make the Road',
+        icon: 'walk',
+        desc: 'Grassroots organizing and legal support for immigrants.',
+    },
+    {
+        id: '4',
+        name: 'Alianza',
+        icon: 'account-heart-outline',
+        desc: 'Community network offering support to local families.',
+    },
+    {
+        id: '5',
+        name: 'Legal Shield',
+        icon: 'shield-check-outline',
+        desc: 'Legal assistance and rapid response coordination.',
+    },
 ];
 
 const isValidPhone = (value: string) => {
     const digits = value.replace(/\D/g, '');
     return digits.length >= 10 && digits.length <= 15;
+};
+
+const getOrgColorsForIcon = (iconName?: string | null) => {
+    switch (iconName) {
+        case 'bank-outline':
+        case 'scale-balance':
+            return { bg: '#FBE9E7', scopeColor: '#BF360C' };
+        case 'account-group-outline':
+        case 'handshake-outline':
+            return { bg: '#F3E5F5', scopeColor: '#6A1B9A' };
+        case 'walk':
+        case 'hand-front-right':
+            return { bg: '#E8F5E9', scopeColor: '#2E7D32' };
+        case 'account-heart-outline':
+            return { bg: '#FFF3E0', scopeColor: '#E65100' };
+        case 'shield-check-outline':
+        case 'shield-alert-outline':
+            return { bg: '#FBE9E7', scopeColor: '#B71C1C' };
+        case 'home-outline':
+            return { bg: '#E3F2FD', scopeColor: '#1565C0' };
+        default:
+            return { bg: '#E8F5E9', scopeColor: '#2E7D32' };
+    }
 };
 
 export default function VolunteerScreen() {
@@ -71,6 +121,8 @@ export default function VolunteerScreen() {
     const [isLoading, setIsLoading] = useState(false);
     const [hasSignedUp, setHasSignedUp] = useState(false);
     const [phoneError, setPhoneError] = useState<string | null>(null);
+    const [savedLocation, setSavedLocation] = useState<string | null>(null);
+    const { organizations: localOrganizations } = useLocalOrganizations(savedLocation);
 
     const slideAnim = useRef(new Animated.Value(0)).current;
     const collapseAnim = useRef(new Animated.Value(0)).current; // 1 = expanded, 0 = collapsed
@@ -82,6 +134,8 @@ export default function VolunteerScreen() {
             if (stored === 'true') {
                 setHasSignedUp(true);
             }
+            const location = await AsyncStorage.getItem('userLocation');
+            setSavedLocation(location);
         }
         loadVolunteerStatus();
     }, []);
@@ -168,7 +222,7 @@ export default function VolunteerScreen() {
 
         return (
             <Animated.View
-                className="mb-5 items-center"
+                className="mb-0"
                 style={[
                     styles.orgSquareCard,
                     {
@@ -178,37 +232,117 @@ export default function VolunteerScreen() {
                 ]}
             >
                 <View
-                    className="rounded-2xl mb-2 justify-center items-center border border-[rgba(0,0,0,0.05)]"
-                    style={[
-                        styles.imagePlaceholder,
-                        { backgroundColor: org.color },
-                    ]}
+                    className="rounded-2xl border px-3.5 py-3 bg-white"
+                    style={{
+                        borderColor: org.scopeColor,
+                        backgroundColor: org.bg,
+                    }}
                 >
-                    <MaterialCommunityIcons name="image-outline" size={24} color="rgba(0,0,0,0.1)" />
+                    <View className="flex-row items-center mb-2.5">
+                        <View
+                            className="mr-2.5 rounded-xl justify-center items-center"
+                            style={[
+                                styles.imagePlaceholder,
+                                { backgroundColor: 'rgba(255,255,255,0.8)' },
+                            ]}
+                        >
+                            <MaterialCommunityIcons
+                                name={org.icon as any}
+                                size={22}
+                                color={org.scopeColor}
+                            />
+                        </View>
+                        <Text
+                            className="flex-1 text-[13px] font-semibold text-[#4E342E]"
+                            numberOfLines={2}
+                        >
+                            {org.name}
+                        </Text>
+                    </View>
+
+                    {org.desc && (
+                        <Text
+                            className="text-[11px] leading-[16px] text-[#5D4037] mb-3"
+                            numberOfLines={3}
+                        >
+                            {org.desc}
+                        </Text>
+                    )}
+
+                    <View className="flex-row items-center justify-end">
+                        <Text className="text-[11px] font-semibold text-[#4E342E] mr-1.5">
+                            Learn more
+                        </Text>
+                        <MaterialCommunityIcons
+                            name="chevron-right"
+                            size={14}
+                            color={org.scopeColor}
+                        />
+                    </View>
                 </View>
-                <Text
-                    className="text-[12px] font-semibold text-[#6D4C41] text-center w-full"
-                    numberOfLines={1}
-                >
-                    {org.name}
-                </Text>
             </Animated.View>
         );
     };
 
 
-    const renderNearbyOrgs = () => (
+    const renderNearbyOrgs = () => {
+        let orgsToShow: any[] = [];
+
+        if (localOrganizations && localOrganizations.length > 0) {
+            const volunteerOrgs = localOrganizations.filter(
+                (org: any) => org.volunteerOpportunities?.lookingForVolunteers
+            );
+
+            orgsToShow = volunteerOrgs.map((org: any) => {
+                const colors = getOrgColorsForIcon(org.icon);
+                return {
+                    id: org.id,
+                    name: org.name,
+                    desc: org.desc,
+                    icon: org.icon || 'home-outline',
+                    bg: colors.bg,
+                    scopeColor: colors.scopeColor,
+                    volunteeringLink:
+                        org.volunteerOpportunities?.volunteeringLink || org.url || null,
+                };
+            });
+        }
+
+        const hasVolunteerOrgs = orgsToShow.length > 0;
+
+        return (
         <View className="w-full mt-10 mb-5">
             <Text className="text-[16px] font-bold text-[#4E342E] mb-4 text-left">
-                Find places near you that needs volunteers
+                Places near you that need volunteers
             </Text>
-            <View className="flex-row flex-wrap justify-start w-full gap-3">
-                {NEARBY_ORGS.map((org, index) => (
-                    <AnimatedOrgCard key={org.id} org={org} index={index} />
-                ))}
-            </View>
+
+            {!hasVolunteerOrgs ? (
+                <View className="rounded-[14px] border border-[#E5E7EB] bg-white px-4 py-3">
+                    <Text className="text-[13px] leading-[18px] text-[#4B5563]">
+                        We couldn’t find any organizations near you that are actively looking for volunteers right now.
+                        Check back soon! We're always updating this list!
+                    </Text>
+                </View>
+            ) : (
+                <View className="flex-row flex-wrap justify-start w-full gap-3">
+                    {orgsToShow.map((org, index) => (
+                        <TouchableOpacity
+                            key={org.id || `${org.name}-${index}`}
+                            activeOpacity={0.8}
+                            onPress={() => {
+                                if (!org.volunteeringLink) return;
+                                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                                Linking.openURL(org.volunteeringLink);
+                            }}
+                        >
+                            <AnimatedOrgCard org={org} index={index} />
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            )}
         </View>
-    );
+        );
+    };
 
     const renderSignup = () => {
         const isPrimaryDisabled = (!formData.name || !formData.phone || isLoading) && !isCollapsed;
@@ -451,10 +585,10 @@ export default function VolunteerScreen() {
 
 const styles = StyleSheet.create({
     orgSquareCard: {
-        width: (width - 48 - 24) / 3, // Maintains size but now respects gap
+        width: (width - 48 - 16) / 2, // two cards per row with gap
     },
     imagePlaceholder: {
-        width: (width - 48 - 24) / 3,
-        height: (width - 48 - 24) / 3,
+        width: 32,
+        height: 32,
     },
 });
