@@ -141,22 +141,19 @@ const AnimatedSubPoints = ({ subPoints }: AnimatedSubPointsProps) => {
 
     return (
         <Animated.View
+            className="mt-7 p-[18px] rounded-[18px] border border-white/20 bg-white/10"
             style={{
-                marginTop: 28,
-                padding: 18,
-                backgroundColor: 'rgba(255,255,255,0.08)',
-                borderRadius: 18,
-                borderWidth: 1,
-                borderColor: 'rgba(255,255,255,0.12)',
                 opacity: fadeAnim,
                 transform: [{ translateY: slideAnim }],
             }}
         >
-            <View style={{ gap: 12 }}>
+            <View className="gap-3">
                 {subPoints.map((sub: string, index: number) => (
-                    <View key={index} style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-                        <MaterialCommunityIcons name="check" size={14} color="rgba(255,255,255,0.6)" style={{ marginRight: 10, marginTop: 3 }} />
-                        <Text style={{ flex: 1, color: 'rgba(255,255,255,0.85)', fontSize: 14, lineHeight: 20 }}>{sub}</Text>
+                    <View key={index} className="flex-row items-start">
+                        <View className="mr-2.5 mt-0.5">
+                            <MaterialCommunityIcons name="check" size={14} color="rgba(255,255,255,0.6)" />
+                        </View>
+                        <Text className="flex-1 text-sm leading-5 text-[rgba(255,255,255,0.85)]">{sub}</Text>
                     </View>
                 ))}
             </View>
@@ -190,37 +187,21 @@ export default function KnowYourRightsScreen() {
     const slide = SLIDES[currentIndex];
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: slide.color }}>
+        <SafeAreaView className="flex-1" style={{ backgroundColor: slide.color }}>
             {/* Exit button */}
             <TouchableOpacity
                 onPress={() => router.back()}
-                style={{
-                    position: 'absolute',
-                    top: 50,
-                    right: 20,
-                    zIndex: 10,
-                    width: 36,
-                    height: 36,
-                    borderRadius: 18,
-                    backgroundColor: 'rgba(255,255,255,0.2)',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                }}
+                className="absolute right-5 top-[50px] z-10 h-9 w-9 items-center justify-center rounded-full bg-white/20"
             >
-                <Text style={{ color: '#ffffff', fontSize: 20, fontWeight: '600' }}>✕</Text>
+                <Text className="text-xl font-semibold text-white">✕</Text>
             </TouchableOpacity>
 
             {/* Progress dots */}
-            <View style={{ flexDirection: 'row', justifyContent: 'center', paddingTop: 16, paddingBottom: 8, gap: 6 }}>
+            <View className="flex-row justify-center gap-1.5 pb-2 pt-4">
                 {SLIDES.map((_, i) => (
                     <View
                         key={i}
-                        style={{
-                            width: i === currentIndex ? 20 : 6,
-                            height: 6,
-                            borderRadius: 3,
-                            backgroundColor: i === currentIndex ? '#ffffff' : 'rgba(255,255,255,0.35)',
-                        }}
+                        className={`h-1.5 rounded-full ${i === currentIndex ? 'w-5 bg-white' : 'w-1.5 bg-white/35'}`}
                     />
                 ))}
             </View>
@@ -235,31 +216,31 @@ export default function KnowYourRightsScreen() {
                 showsHorizontalScrollIndicator={false}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
-                    <View style={{ width, flex: 1, paddingHorizontal: 28, paddingTop: 32, paddingBottom: 16 }}>
+                    <View className="flex-1 px-7 pb-4 pt-8" style={{ width }}>
                         {/* Icon */}
-                        <View style={{ width: 90, height: 90, borderRadius: 45, backgroundColor: 'rgba(255,255,255,0.15)', justifyContent: 'center', alignItems: 'center', marginBottom: 28 }}>
+                        <View className="mb-7 h-[90px] w-[90px] items-center justify-center rounded-[45px] bg-white/15">
                             <MaterialCommunityIcons name={item.icon as any} size={44} color="#ffffff" />
                         </View>
 
                         {/* Step label */}
-                        <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: '700', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8 }}>
+                        <Text className="mb-2 text-xs font-bold uppercase tracking-widest text-[rgba(255,255,255,0.6)]">
                             Step {SLIDES.indexOf(item) + 1} of {SLIDES.length}
                         </Text>
 
                         {/* Title */}
-                        <Text style={{ color: '#ffffff', fontSize: 28, fontWeight: '800', lineHeight: 34, marginBottom: 28 }}>
+                        <Text className="mb-7 text-[28px] font-extrabold leading-[34px] text-white">
                             {item.title}
                         </Text>
 
                         {/* Bullet points (Rendered only if present) */}
                         {item.points && item.points.length > 0 && (
-                            <View style={{ gap: 16 }}>
+                            <View className="gap-4">
                                 {item.points.map((point: string, i: number) => (
-                                    <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-                                        <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: 'rgba(255,255,255,0.2)', justifyContent: 'center', alignItems: 'center', marginRight: 14, marginTop: 1 }}>
-                                            <Text style={{ color: '#ffffff', fontSize: 11, fontWeight: '700' }}>{i + 1}</Text>
+                                    <View key={i} className="flex-row items-start">
+                                        <View className="mr-3.5 mt-0.5 h-[22px] w-[22px] items-center justify-center rounded-[11px] bg-white/20">
+                                            <Text className="text-[11px] font-bold text-white">{i + 1}</Text>
                                         </View>
-                                        <Text style={{ flex: 1, color: 'rgba(255,255,255,0.92)', fontSize: 15, lineHeight: 22 }}>
+                                        <Text className="flex-1 text-[15px] leading-[22px] text-[rgba(255,255,255,0.92)]">
                                             {point}
                                         </Text>
                                     </View>
@@ -269,19 +250,19 @@ export default function KnowYourRightsScreen() {
 
                         {/* Resources (Rendered only for slide 7) */}
                         {item.resources && (
-                            <View style={{ gap: 12 }}>
+                            <View className="gap-3">
                                 {item.resources.map((res: any, i: number) => (
-                                    <View key={i} style={{ padding: 16, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' }}>
-                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                                            <Text style={{ color: '#ffffff', fontSize: 15, fontWeight: '700', flex: 1, marginRight: 8 }}>{res.name}</Text>
+                                    <View key={i} className="rounded-2xl border border-white/15 bg-white/10 p-4">
+                                        <View className="mb-2 flex-row items-start justify-between">
+                                            <Text className="mr-2 flex-1 text-[15px] font-bold text-white">{res.name}</Text>
                                             <TouchableOpacity
                                                 onPress={() => Linking.openURL(res.url)}
-                                                style={{ paddingHorizontal: 10, paddingVertical: 4, backgroundColor: '#ffffff', borderRadius: 6 }}
+                                                className="rounded-md bg-white px-2.5 py-1"
                                             >
-                                                <Text style={{ color: item.color, fontSize: 11, fontWeight: '700' }}>Website</Text>
+                                                <Text className="text-[11px] font-bold" style={{ color: item.color }}>Website</Text>
                                             </TouchableOpacity>
                                         </View>
-                                        <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12, lineHeight: 18 }}>{res.description}</Text>
+                                        <Text className="text-xs leading-[18px] text-[rgba(255,255,255,0.8)]">{res.description}</Text>
                                     </View>
                                 ))}
                             </View>
@@ -294,20 +275,20 @@ export default function KnowYourRightsScreen() {
             />
 
             {/* Navigation buttons */}
-            <View style={{ flexDirection: 'row', gap: 12, paddingHorizontal: 28, paddingBottom: 32, paddingTop: 16 }}>
+            <View className="flex-row gap-3 px-7 pb-8 pt-4">
                 {currentIndex > 0 && (
                     <TouchableOpacity
                         onPress={goPrev}
-                        style={{ flex: 1, paddingVertical: 16, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center' }}
+                        className="flex-1 items-center rounded-[14px] bg-white/15 py-4"
                     >
-                        <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 15 }}>← Back</Text>
+                        <Text className="text-[15px] font-bold text-white">← Back</Text>
                     </TouchableOpacity>
                 )}
                 <TouchableOpacity
                     onPress={goNext}
-                    style={{ flex: 2, paddingVertical: 16, borderRadius: 14, backgroundColor: '#ffffff', alignItems: 'center' }}
+                    className="flex-[2] items-center rounded-[14px] bg-white py-4"
                 >
-                    <Text style={{ color: slide.color, fontWeight: '800', fontSize: 15 }}>
+                    <Text className="text-[15px] font-extrabold" style={{ color: slide.color }}>
                         {currentIndex === SLIDES.length - 1 ? 'Done ✓' : 'Next →'}
                     </Text>
                 </TouchableOpacity>

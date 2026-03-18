@@ -46,6 +46,7 @@ app-example
 ## Skills/Agents
 /.agents
 /skills-lock.json
+/.cursor
 
 # Other Folders
 /_vscode

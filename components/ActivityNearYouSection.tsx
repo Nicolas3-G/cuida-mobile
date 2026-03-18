@@ -51,13 +51,10 @@ const AnimatedNewsCard = ({ story, isExpanded, isTruncatable, onToggleExpand, on
 
   return (
     <Animated.View
+      className="min-h-[120px] w-[220px] overflow-hidden rounded-2xl"
       style={{
         transform: [{ scale: scaleValue }],
         backgroundColor: story.color,
-        width: 220,
-        minHeight: 120,
-        borderRadius: 16,
-        overflow: 'hidden',
       }}
     >
       <Pressable
@@ -67,26 +64,24 @@ const AnimatedNewsCard = ({ story, isExpanded, isTruncatable, onToggleExpand, on
           triggerHaptic();
           story.link && Linking.openURL(story.link);
         }}
-        style={({ pressed }) => ({
-          flexGrow: 1,
-          opacity: pressed ? 0.95 : 1,
-        })}
+        className="flex-grow"
+        style={({ pressed }) => ({ opacity: pressed ? 0.95 : 1 })}
       >
-        <View style={{ padding: 12, flex: 1, justifyContent: 'space-between' }}>
+        <View className="flex-1 justify-between p-3">
           <View>
-            <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: 10, fontWeight: '600', textTransform: 'uppercase', marginBottom: 4 }}>
+            <Text className="mb-1 text-[10px] font-semibold uppercase text-[rgba(255,255,255,0.75)]">
               {story.category}
             </Text>
 
             <Text
-              style={{ position: 'absolute', opacity: 0, fontSize: 13, fontWeight: '700', lineHeight: 18, width: 220 - 24 }}
+              className="absolute w-[196px] opacity-0 text-[13px] font-bold leading-[18px]"
               onTextLayout={(e) => onTextLayout(e, story.id)}
             >
               {story.title}
             </Text>
 
             <Text
-              style={{ color: '#ffffff', fontSize: 13, fontWeight: '700', lineHeight: 18, marginBottom: 2 }}
+              className="mb-0.5 text-[13px] font-bold leading-[18px] text-white"
               numberOfLines={isExpanded ? undefined : 3}
             >
               {story.title}
@@ -98,19 +93,21 @@ const AnimatedNewsCard = ({ story, isExpanded, isTruncatable, onToggleExpand, on
                   triggerHaptic();
                   onToggleExpand(story.id);
                 }}
-                style={{ alignSelf: 'flex-start', marginBottom: 6 }}
+                className="mb-1.5 self-start"
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
-                <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 11, fontWeight: '600', textDecorationLine: 'underline' }}>
+                <Text className="text-[11px] font-semibold text-[rgba(255,255,255,0.8)] underline">
                   {isExpanded ? 'Show less' : 'More'}
                 </Text>
               </TouchableOpacity>
             )}
           </View>
 
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-            <MaterialCommunityIcons name="map-marker-outline" size={13} color="rgba(255,255,255,0.65)" style={{ marginRight: 3 }} />
-            <Text style={{ color: 'rgba(255,255,255,0.65)', fontSize: 11 }}>
+          <View className="mt-1 flex-row items-center">
+            <View className="mr-[3px]">
+              <MaterialCommunityIcons name="map-marker-outline" size={13} color="rgba(255,255,255,0.65)" />
+            </View>
+            <Text className="text-[11px] text-[rgba(255,255,255,0.65)]">
               {story.location}
             </Text>
           </View>

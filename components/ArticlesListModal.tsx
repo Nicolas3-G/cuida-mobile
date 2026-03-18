@@ -30,53 +30,17 @@ const ArticlesListModal = ({ visible, onClose, snippet, triggerHaptic }: Article
       visible={visible}
       onRequestClose={onClose}
     >
-      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
-        <View
-          style={{
-            backgroundColor: '#FFF8E1',
-            borderTopLeftRadius: 24,
-            borderTopRightRadius: 24,
-            paddingHorizontal: 20,
-            paddingBottom: 40,
-            height: '70%',
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: -4 },
-            shadowOpacity: 0.1,
-            shadowRadius: 10,
-          }}
-        >
-          <View
-            style={{
-              width: 40,
-              height: 5,
-              backgroundColor: '#D7CCC8',
-              borderRadius: 3,
-              alignSelf: 'center',
-              marginVertical: 12,
-            }}
-          />
+      <View className="flex-1 justify-end bg-black/50">
+        <View className="h-[70%] rounded-t-3xl bg-[#FFF8E1] px-5 pb-10 shadow-lg">
+          <View className="my-3 h-1.5 w-10 self-center rounded-[3px] bg-[#D7CCC8]" />
 
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: 20,
-            }}
-          >
-            <Text style={{ fontSize: 20, fontWeight: '800', color: '#4E342E' }}>Related Articles</Text>
+          <View className="mb-5 flex-row items-center justify-between">
+            <Text className="text-[20px] font-extrabold text-[#4E342E]">Related Articles</Text>
             <TouchableOpacity
               onPress={onClose}
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 16,
-                backgroundColor: '#e2e8f0',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+              className="h-8 w-8 items-center justify-center rounded-full bg-slate-200"
             >
-              <Text style={{ fontSize: 18, color: '#64748b' }}>✕</Text>
+              <Text className="text-[18px] text-slate-500">✕</Text>
             </TouchableOpacity>
           </View>
 
@@ -85,35 +49,12 @@ const ArticlesListModal = ({ visible, onClose, snippet, triggerHaptic }: Article
               snippet.articles.map((article, index) => (
                 <View
                   key={index}
-                  style={{
-                    marginBottom: 16,
-                    padding: 16,
-                    backgroundColor: '#FFF6E8',
-                    borderRadius: 16,
-                    borderWidth: 1,
-                    borderColor: '#FFE0B2',
-                  }}
+                  className="mb-4 rounded-2xl border border-[#FFE0B2] bg-[#FFF6E8] p-4"
                 >
-                  <Text
-                    style={{
-                      color: '#6D4C41',
-                      fontSize: 11,
-                      fontWeight: '700',
-                      textTransform: 'uppercase',
-                      marginBottom: 4,
-                    }}
-                  >
+                  <Text className="mb-1 text-[11px] font-bold uppercase text-[#6D4C41]">
                     {article.parsedSource || article.source}
                   </Text>
-                  <Text
-                    style={{
-                      color: '#4E342E',
-                      fontSize: 15,
-                      fontWeight: '700',
-                      lineHeight: 22,
-                      marginBottom: 12,
-                    }}
-                  >
+                  <Text className="mb-3 text-[15px] font-bold leading-[22px] text-[#4E342E]">
                     {article.formattedTitle || article.title}
                   </Text>
                   <TouchableOpacity
@@ -124,22 +65,23 @@ const ArticlesListModal = ({ visible, onClose, snippet, triggerHaptic }: Article
                         Linking.openURL(article.link);
                       }
                     }}
-                    style={{ flexDirection: 'row', alignItems: 'center' }}
+                    className="flex-row items-center"
                   >
-                    <Text style={{ color: '#E65100', fontSize: 13, fontWeight: '600' }}>Read full coverage</Text>
-                    <Text style={{ color: '#E65100', fontSize: 16, marginLeft: 4 }}>›</Text>
+                    <Text className="text-[13px] font-semibold text-[#E65100]">Read full coverage</Text>
+                    <Text className="ml-1 text-[16px] text-[#E65100]">›</Text>
                   </TouchableOpacity>
                 </View>
               ))
             ) : (
-              <View style={{ alignItems: 'center', paddingVertical: 40 }}>
-                <MaterialCommunityIcons
-                  name="newspaper-variant-outline"
-                  size={40}
-                  color="#6D4C41"
-                  style={{ marginBottom: 16 }}
-                />
-                <Text style={{ color: '#6D4C41', fontSize: 14 }}>No specific articles found for this snippet.</Text>
+              <View className="items-center py-10">
+                <View className="mb-4">
+                  <MaterialCommunityIcons
+                    name="newspaper-variant-outline"
+                    size={40}
+                    color="#6D4C41"
+                  />
+                </View>
+                <Text className="text-sm text-[#6D4C41]">No specific articles found for this snippet.</Text>
               </View>
             )}
           </ScrollView>

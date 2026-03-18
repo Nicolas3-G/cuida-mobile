@@ -203,40 +203,40 @@ export default function LocationScreen() {
     };
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: '#fff6e8' }}>
-            <View style={{ flex: 1, paddingHorizontal: 24, paddingTop: 24, paddingBottom: 32 }}>
+        <SafeAreaView className="flex-1 bg-[#fff6e8]">
+            <View className="flex-1 px-6 pb-8 pt-6">
 
                 {/* Header with Back Button */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 40 }}>
+                <View className="mb-10 flex-row items-center">
                     <TouchableOpacity
                         onPress={() => router.back()}
                         activeOpacity={0.7}
-                        style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#FBE9E7', justifyContent: 'center', alignItems: 'center', marginRight: 16 }}
+                        className="mr-4 h-10 w-10 items-center justify-center rounded-full bg-[#FBE9E7]"
                     >
                         <Ionicons name="chevron-back" size={24} color="#4E342E" />
                     </TouchableOpacity>
-                    <Text style={{ fontSize: 20, fontWeight: '700', color: '#4E342E' }}>
+                    <Text className="text-xl font-bold text-[#4E342E]">
                         Back to Language
                     </Text>
                 </View>
 
                 {/* Main Content */}
-                <View style={{ alignItems: 'center', marginBottom: 40 }}>
-                    <Text style={{ fontSize: 32, fontWeight: '800', color: '#4E342E', textAlign: 'center', marginBottom: 12 }}>
+                <View className="mb-10 items-center">
+                    <Text className="mb-3 text-center text-[32px] font-extrabold text-[#4E342E]">
                         Set Your Location
                     </Text>
-                    <Text style={{ fontSize: 16, color: '#475569', textAlign: 'center', paddingHorizontal: 16 }}>
+                    <Text className="px-4 text-center text-base text-slate-600">
                         Cuida relies on your location to provide relevant alerts and resources. (US Only)
                     </Text>
                 </View>
 
                 {/* Input Area */}
-                <View style={{ marginBottom: 8, position: 'relative', zIndex: 50 }}>
-                    <Text style={{ fontSize: 13, fontWeight: '700', color: '#475569', marginBottom: 8, marginLeft: 4, textTransform: 'uppercase', letterSpacing: 1 }}>
+                <View className="relative z-50 mb-2">
+                    <Text className="mb-2 ml-1 text-[13px] font-bold uppercase tracking-wide text-slate-600">
                         US State
                     </Text>
                     <TextInput
-                        style={{ width: '100%', backgroundColor: '#ffffff', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 18, fontSize: 18, color: '#1e293b', borderWidth: 1, borderColor: '#e2e8f0' }}
+                        className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-[18px] text-[18px] text-slate-800"
                         placeholder="Type your state (e.g. California)"
                         placeholderTextColor="#94a3b8"
                         value={location}
@@ -248,26 +248,16 @@ export default function LocationScreen() {
                         activeOpacity={0.8}
                         onPress={handleUseMyLocation}
                         disabled={isLocating}
-                        style={{
-                            marginTop: 10,
-                            alignSelf: 'flex-start',
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            paddingVertical: 10,
-                            paddingHorizontal: 14,
-                            borderRadius: 999,
-                            borderWidth: 1,
-                            borderColor: '#cbd5e1',
-                            backgroundColor: '#f8fafc',
-                            opacity: isLocating ? 0.7 : 1,
-                        }}
+                        className={`mt-2.5 flex-row items-center self-start rounded-full border border-slate-300 bg-slate-50 py-2.5 px-3.5 ${isLocating ? 'opacity-70' : 'opacity-100'}`}
                     >
                         {isLocating ? (
                             <ActivityIndicator size="small" color="#475569" />
                         ) : (
                             <>
-                                <Ionicons name="locate-outline" size={18} color="#475569" style={{ marginRight: 6 }} />
-                                <Text style={{ fontSize: 14, fontWeight: '600', color: '#475569' }}>
+                                <View className="mr-1.5">
+                                    <Ionicons name="locate-outline" size={18} color="#475569" />
+                                </View>
+                                <Text className="text-sm font-semibold text-slate-600">
                                     Use my location
                                 </Text>
                             </>
@@ -276,8 +266,8 @@ export default function LocationScreen() {
 
                     {/* Autocomplete Suggestions */}
                     {showSuggestions && (
-                        <View className="absolute top-[85px] left-0 right-0 bg-white rounded-xl shadow-lg mt-1 overflow-hidden z-50">
-                            <ScrollView style={{ maxHeight: 200 }} keyboardShouldPersistTaps="handled">
+                        <View className="absolute top-[85px] left-0 right-0 z-50 mt-1 overflow-hidden rounded-xl bg-white shadow-lg">
+                            <ScrollView className="max-h-[200px]" keyboardShouldPersistTaps="handled">
                                 {filteredStates.map((state) => (
                                     <TouchableOpacity
                                         key={state.code}
@@ -294,69 +284,28 @@ export default function LocationScreen() {
 
                 {/* City selection + disclaimer */}
                 {resolvedStateCode && (
-                    <View style={{ marginBottom: 16 }}>
-                        <View
-                            style={{
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                justifyContent: 'flex-start',
-                                marginBottom: 8,
-                                marginLeft: 4,
-                                gap: 6,
-                            }}
-                        >
-                            <Text
-                                style={{
-                                    fontSize: 13,
-                                    fontWeight: '700',
-                                    color: '#475569',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: 1,
-                                }}
-                            >
+                    <View className="mb-4">
+                        <View className="mb-2 ml-1 flex-row items-center justify-start gap-1.5">
+                            <Text className="text-[13px] font-bold uppercase tracking-wide text-slate-600">
                                 City options
                             </Text>
                             <TouchableOpacity
                                 onPress={() => setShowCityInfo(prev => !prev)}
                                 activeOpacity={0.7}
-                                style={{
-                                    width: 20,
-                                    height: 20,
-                                    borderRadius: 10,
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    backgroundColor: '#FFEDD5',
-                                }}
+                                className="h-5 w-5 items-center justify-center rounded-full bg-orange-100"
                             >
                                 <Ionicons name="information-circle-outline" size={14} color="#F97316" />
                             </TouchableOpacity>
                         </View>
                         {showCityInfo && (
-                            <View
-                                style={{
-                                    borderWidth: 1,
-                                    borderColor: '#e2e8f0',
-                                    backgroundColor: '#f8fafc',
-                                    borderRadius: 12,
-                                    paddingHorizontal: 12,
-                                    paddingVertical: 10,
-                                    marginBottom: 10,
-                                    marginLeft: 2,
-                                    marginRight: 2,
-                                }}
-                            >
-                                <Text
-                                    style={{
-                                        fontSize: 13,
-                                        color: '#64748b',
-                                    }}
-                                >
+                            <View className="mx-0.5 mb-2.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                                <Text className="text-[13px] text-slate-500">
                                     We currently only support these cities. If you prefer state-wide data,
                                     you can choose &quot;State level only&quot; instead.
                                 </Text>
                             </View>
                         )}
-                        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                        <View className="flex-row flex-wrap">
                             {(STATE_CITIES[resolvedStateCode as keyof typeof STATE_CITIES] || []).map((city) => {
                                 const isSelected = city === selectedCity;
                                 return (
@@ -367,23 +316,10 @@ export default function LocationScreen() {
                                             setStateLevelOnly(false);
                                         }}
                                         activeOpacity={0.8}
-                                        style={{
-                                            paddingVertical: 8,
-                                            paddingHorizontal: 14,
-                                            borderRadius: 999,
-                                            borderWidth: 1,
-                                            borderColor: isSelected ? '#F57C00' : '#e2e8f0',
-                                            backgroundColor: isSelected ? '#FFF3E0' : '#ffffff',
-                                            marginRight: 8,
-                                            marginBottom: 8,
-                                        }}
+                                        className={`mb-2 mr-2 rounded-full border py-2 px-3.5 ${isSelected ? 'border-orange-600 bg-orange-50' : 'border-slate-200 bg-white'}`}
                                     >
                                         <Text
-                                            style={{
-                                                fontSize: 14,
-                                                fontWeight: '600',
-                                                color: isSelected ? '#BF360C' : '#475569',
-                                            }}
+                                            className={`text-sm font-semibold ${isSelected ? 'text-orange-900' : 'text-slate-600'}`}
                                         >
                                             {city}
                                         </Text>
@@ -397,23 +333,10 @@ export default function LocationScreen() {
                                 setStateLevelOnly(true);
                                 setSelectedCity('');
                             }}
-                            style={{
-                                marginTop: 8,
-                                alignSelf: 'flex-start',
-                                paddingVertical: 8,
-                                paddingHorizontal: 14,
-                                borderRadius: 999,
-                                borderWidth: 1,
-                                borderColor: stateLevelOnly ? '#F57C00' : '#e2e8f0',
-                                backgroundColor: stateLevelOnly ? '#FFF3E0' : '#ffffff',
-                            }}
+                            className={`mt-2 self-start rounded-full border py-2 px-3.5 ${stateLevelOnly ? 'border-orange-600 bg-orange-50' : 'border-slate-200 bg-white'}`}
                         >
                             <Text
-                                style={{
-                                    fontSize: 14,
-                                    fontWeight: '600',
-                                    color: stateLevelOnly ? '#BF360C' : '#475569',
-                                }}
+                                className={`text-sm font-semibold ${stateLevelOnly ? 'text-orange-900' : 'text-slate-600'}`}
                             >
                                 State level only
                             </Text>
@@ -422,30 +345,17 @@ export default function LocationScreen() {
                 )}
 
                 {/* Finish Button */}
-                <View style={{ marginTop: 'auto' }}>
+                <View className="mt-auto">
                     <TouchableOpacity
                         activeOpacity={0.8}
                         onPress={handleContinue}
                         disabled={!location.trim() || isSaving}
-                        style={{
-                            width: '100%',
-                            paddingVertical: 18,
-                            borderRadius: 16,
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            flexDirection: 'row',
-                            backgroundColor: location.trim() ? '#F57C00' : '#cbd5e1',
-                            shadowColor: '#F57C00',
-                            shadowOffset: { width: 0, height: 4 },
-                            shadowOpacity: location.trim() ? 0.2 : 0,
-                            shadowRadius: 8,
-                            elevation: 4
-                        }}
+                        className={`w-full flex-row items-center justify-center rounded-2xl py-[18px] ${location.trim() ? 'bg-orange-600 shadow-md' : 'bg-slate-300'}`}
                     >
                         {isSaving ? (
                             <ActivityIndicator color="#fff" />
                         ) : (
-                            <Text style={{ fontSize: 18, fontWeight: '700', color: '#ffffff' }}>
+                            <Text className="text-[18px] font-bold text-white">
                                 Finish Setup
                             </Text>
                         )}

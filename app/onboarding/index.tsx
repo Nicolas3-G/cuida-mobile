@@ -25,48 +25,34 @@ export default function OnboardingScreen() {
     };
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: '#fff6e8' }}>
-            <View style={{ flex: 1, paddingHorizontal: 24, paddingTop: 48, paddingBottom: 32 }}>
+        <SafeAreaView className="flex-1 bg-[#fff6e8]">
+            <View className="flex-1 px-6 pb-8 pt-12">
 
                 {/* Header content */}
-                <View style={{ alignItems: 'center', marginBottom: 40 }}>
-                    <View style={{ width: 80, height: 80, backgroundColor: '#FBE9E7', borderRadius: 40, alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
+                <View className="mb-10 items-center">
+                    <View className="mb-6 h-20 w-20 items-center justify-center rounded-full bg-[#FBE9E7]">
                         <MaterialCommunityIcons name="earth" size={40} color="#BF360C" />
                     </View>
-                    <Text style={{ fontSize: 32, fontWeight: '800', color: '#4E342E', textAlign: 'center', marginBottom: 12 }}>
+                    <Text className="mb-3 text-center text-[32px] font-extrabold text-[#4E342E]">
                         Welcome to Cuida
                     </Text>
-                    <Text style={{ fontSize: 16, color: '#6D4C41', textAlign: 'center', paddingHorizontal: 16 }}>
+                    <Text className="px-4 text-center text-base text-[#6D4C41]">
                         To get started, please select your preferred language.
                     </Text>
                 </View>
 
                 {/* Language Selection List */}
-                <View style={{ flex: 1 }}>
+                <View className="flex-1">
                     {LANGUAGES.map((lang) => {
                         return (
                             <TouchableOpacity
                                 key={lang.code}
                                 activeOpacity={0.7}
                                 onPress={() => handleLanguageSelect(lang.code)}
-                                style={{
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                    padding: 20,
-                                    marginBottom: 16,
-                                    borderRadius: 16,
-                                    backgroundColor: '#fff6e8',
-                                    borderWidth: 1,
-                                    borderColor: '#D7CCC8',
-                                    shadowColor: '#000',
-                                    shadowOffset: { width: 0, height: 2 },
-                                    shadowOpacity: 0.05,
-                                    shadowRadius: 8,
-                                    elevation: 2
-                                }}
+                                className="mb-4 flex-row items-center rounded-2xl border border-[#D7CCC8] bg-[#fff6e8] p-5 shadow-md"
                             >
-                                <View style={{ width: 24, height: 24, borderRadius: 12, borderWidth: 2, marginRight: 16, alignItems: 'center', justifyContent: 'center', borderColor: '#BCAAA4' }} />
-                                <Text style={{ fontSize: 18, fontWeight: '600', color: '#4E342E' }}>
+                                <View className="mr-4 h-6 w-6 items-center justify-center rounded-full border-2 border-[#BCAAA4]" />
+                                <Text className="text-[18px] font-semibold text-[#4E342E]">
                                     {lang.label}
                                 </Text>
                             </TouchableOpacity>
