@@ -419,84 +419,9 @@ export default function SettingsScreen() {
                             </View>
                         </TouchableOpacity>
 
-                        {/* ------------- Vibration Segment ------------- */}
-                        <TouchableOpacity
-                            activeOpacity={0.7}
-                            onPress={handleToggleVibration}
-                            className="flex-row items-center justify-between p-4 border-b border-slate-100"
-                        >
-                            <View className="flex-row items-center">
-                                <View className="mr-3">
-                                    <MaterialCommunityIcons
-                                        name={vibrationEnabled ? "vibrate" : "vibrate-off"}
-                                        size={20}
-                                        color="#6D4C41"
-                                    />
-                                </View>
-                                <Text className="text-base font-semibold text-slate-700">Vibrations</Text>
-                            </View>
-                            <View className="flex-row items-center">
-                                <Text className={`text-base font-bold ${vibrationEnabled ? 'text-orange-600' : 'text-slate-400'}`}>
-                                    {vibrationEnabled ? 'ON' : 'OFF'}
-                                </Text>
-                                <View
-                                    className={`w-10 h-6 rounded-full ml-3 items-start justify-center px-1 ${vibrationEnabled ? 'bg-orange-600' : 'bg-slate-300'}`}
-                                >
-                                    <View
-                                        className={`w-4 h-4 bg-white rounded-full ${vibrationEnabled ? 'self-end' : 'self-start'}`}
-                                    />
-                                </View>
-                            </View>
-                        </TouchableOpacity>
-
-                        {/* ------------- Refresh data ------------- */}
-                        <TouchableOpacity
-                            activeOpacity={0.7}
-                            onPress={handleRefreshData}
-                            className="flex-row items-center justify-between p-4 border-b border-slate-100"
-                        >
-                            <View className="flex-row items-center">
-                                <View className="mr-3">
-                                    <MaterialCommunityIcons name="refresh" size={20} color="#6D4C41" />
-                                </View>
-                                <Text className="text-base font-semibold text-slate-700">Refresh data</Text>
-                            </View>
-                            <Text className="text-slate-400 text-lg">›</Text>
-                        </TouchableOpacity>
-
-                        {/* ------------- Reset onboarding (Alerts) ------------- */}
-                        <TouchableOpacity
-                            activeOpacity={0.7}
-                            onPress={handleResetOnboarding}
-                            className="flex-row items-center justify-between p-4"
-                        >
-                            <View className="flex-row items-center">
-                                <View className="mr-3">
-                                    <MaterialCommunityIcons name="alert-outline" size={20} color="#6D4C41" />
-                                </View>
-                                <Text className="text-base font-semibold text-slate-700">Reset onboarding</Text>
-                            </View>
-                            <Text className="text-slate-400 text-lg">›</Text>
-                        </TouchableOpacity>
-
-                        {/* ------------- Feedback ------------- */}
-                        <TouchableOpacity
-                            activeOpacity={0.7}
-                            onPress={handleSendFeedback}
-                            className="flex-row items-center justify-between p-4 border-t border-slate-100"
-                        >
-                            <View className="flex-row items-center">
-                                <View className="mr-3">
-                                    <MaterialCommunityIcons name="message-text-outline" size={20} color="#6D4C41" />
-                                </View>
-                                <Text className="text-base font-semibold text-slate-700">Send feedback</Text>
-                            </View>
-                            <Text className="text-slate-400 text-lg">›</Text>
-                        </TouchableOpacity>
-
                         {/* Location Dropdown Content */}
                         {expandedItem === 'location' && (
-                            <View className="border-t border-slate-200 bg-[#fff6e8] p-4">
+                            <View className="border-t border-slate-200 bg-slate-50 p-4">
                                 <Text className="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">
                                     US State
                                 </Text>
@@ -619,6 +544,81 @@ export default function SettingsScreen() {
                                 </View>
                             </View>
                         )}
+
+                        {/* ------------- Vibration Segment ------------- */}
+                        <TouchableOpacity
+                            activeOpacity={0.7}
+                            onPress={handleToggleVibration}
+                            className="flex-row items-center justify-between p-4 border-b border-slate-100"
+                        >
+                            <View className="flex-row items-center">
+                                <View className="mr-3">
+                                    <MaterialCommunityIcons
+                                        name={vibrationEnabled ? "vibrate" : "vibrate-off"}
+                                        size={20}
+                                        color="#6D4C41"
+                                    />
+                                </View>
+                                <Text className="text-base font-semibold text-slate-700">Vibrations</Text>
+                            </View>
+                            <View className="flex-row items-center">
+                                <Text className={`text-base font-bold ${vibrationEnabled ? 'text-orange-600' : 'text-slate-400'}`}>
+                                    {vibrationEnabled ? 'ON' : 'OFF'}
+                                </Text>
+                                <View
+                                    className={`w-10 h-6 rounded-full ml-3 items-start justify-center px-1 ${vibrationEnabled ? 'bg-orange-600' : 'bg-slate-300'}`}
+                                >
+                                    <View
+                                        className={`w-4 h-4 bg-white rounded-full ${vibrationEnabled ? 'self-end' : 'self-start'}`}
+                                    />
+                                </View>
+                            </View>
+                        </TouchableOpacity>
+
+                        {/* ------------- Refresh data ------------- */}
+                        <TouchableOpacity
+                            activeOpacity={0.7}
+                            onPress={handleRefreshData}
+                            className="flex-row items-center justify-between p-4 border-b border-slate-100"
+                        >
+                            <View className="flex-row items-center">
+                                <View className="mr-3">
+                                    <MaterialCommunityIcons name="refresh" size={20} color="#6D4C41" />
+                                </View>
+                                <Text className="text-base font-semibold text-slate-700">Refresh data</Text>
+                            </View>
+                            <Text className="text-slate-400 text-lg">›</Text>
+                        </TouchableOpacity>
+
+                        {/* ------------- Reset onboarding (Alerts) ------------- */}
+                        <TouchableOpacity
+                            activeOpacity={0.7}
+                            onPress={handleResetOnboarding}
+                            className="flex-row items-center justify-between p-4"
+                        >
+                            <View className="flex-row items-center">
+                                <View className="mr-3">
+                                    <MaterialCommunityIcons name="alert-outline" size={20} color="#6D4C41" />
+                                </View>
+                                <Text className="text-base font-semibold text-slate-700">Reset onboarding</Text>
+                            </View>
+                            <Text className="text-slate-400 text-lg">›</Text>
+                        </TouchableOpacity>
+
+                        {/* ------------- Feedback ------------- */}
+                        <TouchableOpacity
+                            activeOpacity={0.7}
+                            onPress={handleSendFeedback}
+                            className="flex-row items-center justify-between p-4 border-t border-slate-100"
+                        >
+                            <View className="flex-row items-center">
+                                <View className="mr-3">
+                                    <MaterialCommunityIcons name="message-text-outline" size={20} color="#6D4C41" />
+                                </View>
+                                <Text className="text-base font-semibold text-slate-700">Send feedback</Text>
+                            </View>
+                            <Text className="text-slate-400 text-lg">›</Text>
+                        </TouchableOpacity>
 
                     </View>
 
