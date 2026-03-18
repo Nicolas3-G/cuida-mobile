@@ -421,7 +421,7 @@ export default function SettingsScreen() {
 
                         {/* Location Dropdown Content */}
                         {expandedItem === 'location' && (
-                            <View className="border-t border-slate-200 bg-[#fff6e8] p-4">
+                            <View className="border-t border-slate-200 bg-slate-50 p-4">
                                 <Text className="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">
                                     US State
                                 </Text>
