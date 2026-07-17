@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView, ActivityIndicator, TextInput, KeyboardAvoidingView, Platform, Alert, Linking } from 'react-native';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -51,6 +51,10 @@ export default function SettingsScreen() {
     const [isLocating, setIsLocating] = useState(false);
     const [showCityInfo, setShowCityInfo] = useState(false);
 
+    // Dev mode: secret tap pattern — solo-dev line x2, then version string x3
+    const [devMode, setDevMode] = useState(false);
+    const devSequenceRef = useRef({ solo: 0, version: 0, lastTap: 0 });
+
     const languageMap: Record<string, string> = {
         en: 'English',
         es: 'Español',
@@ -86,6 +90,8 @@ export default function SettingsScreen() {
                     setLocationStateInput(loc);
                 }
                 if (vib !== null) setVibrationEnabled(vib === 'true');
+                const dev = await AsyncStorage.getItem('devModeEnabled');
+                if (dev === 'true') setDevMode(true);
             } catch (error) {
                 console.error('Error loading settings:', error);
             } finally {
@@ -254,8 +260,46 @@ export default function SettingsScreen() {
             }
 
             setExpandedItem(null);
+            // Return to the home screen, which remounts and refetches with the new location
+            router.replace('/');
         } catch (error) {
             console.error('Error saving location:', error);
+        }
+    };
+
+    const DEV_TAP_WINDOW_MS = 3000;
+
+    const handleSoloDevTap = () => {
+        const seq = devSequenceRef.current;
+        const now = Date.now();
+        // Stale, out of order, or already past two taps: restart the pattern with this tap
+        if (now - seq.lastTap > DEV_TAP_WINDOW_MS || seq.version > 0 || seq.solo >= 2) {
+            seq.solo = 0;
+            seq.version = 0;
+        }
+        seq.solo += 1;
+        seq.lastTap = now;
+    };
+
+    const handleVersionTap = () => {
+        const seq = devSequenceRef.current;
+        const now = Date.now();
+        // Pattern requires exactly two solo-dev taps first, within the window
+        if (now - seq.lastTap > DEV_TAP_WINDOW_MS || seq.solo !== 2) {
+            seq.solo = 0;
+            seq.version = 0;
+            seq.lastTap = now;
+            return;
+        }
+        seq.version += 1;
+        seq.lastTap = now;
+        if (seq.version >= 3) {
+            seq.solo = 0;
+            seq.version = 0;
+            const next = !devMode;
+            setDevMode(next);
+            AsyncStorage.setItem('devModeEnabled', String(next)).catch(() => {});
+            Alert.alert('Dev mode', next ? 'Dev mode enabled' : 'Dev mode disabled');
         }
     };
 
@@ -569,7 +613,7 @@ export default function SettingsScreen() {
                                         disabled={!resolvedStateCode}
                                         className={`rounded-xl py-2.5 px-[18px] ${resolvedStateCode ? 'bg-orange-600' : 'bg-slate-300'}`}
                                     >
-                                        <Text className="text-sm font-bold text-white">Save</Text>
+                                        <Text className="text-sm font-bold text-white">Update</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
@@ -620,20 +664,23 @@ export default function SettingsScreen() {
                             <Text className="text-slate-400 text-lg">›</Text>
                         </TouchableOpacity>
 
-                        {/* ------------- Reset onboarding (Alerts) ------------- */}
-                        <TouchableOpacity
-                            activeOpacity={0.7}
-                            onPress={handleResetOnboarding}
-                            className="flex-row items-center justify-between p-4"
-                        >
-                            <View className="flex-row items-center">
-                                <View className="mr-3">
-                                    <MaterialCommunityIcons name="alert-outline" size={20} color="#6D4C41" />
+                        {/* ------------- Reset onboarding (dev mode only) ------------- */}
+                        {/* Revealed by the secret tap pattern: solo-dev line x2, version string x3 */}
+                        {devMode && (
+                            <TouchableOpacity
+                                activeOpacity={0.7}
+                                onPress={handleResetOnboarding}
+                                className="flex-row items-center justify-between p-4"
+                            >
+                                <View className="flex-row items-center">
+                                    <View className="mr-3">
+                                        <MaterialCommunityIcons name="alert-outline" size={20} color="#6D4C41" />
+                                    </View>
+                                    <Text className="text-base font-semibold text-slate-700">Reset onboarding</Text>
                                 </View>
-                                <Text className="text-base font-semibold text-slate-700">Reset onboarding</Text>
-                            </View>
-                            <Text className="text-slate-400 text-lg">›</Text>
-                        </TouchableOpacity>
+                                <Text className="text-slate-400 text-lg">›</Text>
+                            </TouchableOpacity>
+                        )}
 
                         {/* ------------- Feedback ------------- */}
                         <TouchableOpacity
@@ -653,7 +700,11 @@ export default function SettingsScreen() {
                     </View>
 
                     <View className="mt-auto pb-4">
-                        <Text className="text-center text-slate-500 text-xs mb-2 px-4">
+                        <Text
+                            onPress={handleSoloDevTap}
+                            suppressHighlighting
+                            className="text-center text-slate-500 text-xs mb-2 px-4"
+                        >
                             Cuida is a free platform built by a solo immigrant developer. Your support helps keep it running.
                         </Text>
                         <TouchableOpacity
@@ -666,7 +717,11 @@ export default function SettingsScreen() {
                             </Text>
                         </TouchableOpacity>
 
-                        <Text className="text-center text-slate-400 text-xs mt-3">
+                        <Text
+                            onPress={handleVersionTap}
+                            suppressHighlighting
+                            className="text-center text-slate-400 text-xs mt-3"
+                        >
                             Cuida App Version 1.0.0
                         </Text>
                     </View>

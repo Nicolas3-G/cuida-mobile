@@ -95,11 +95,11 @@ const AnimatedNewsCard = ({ story, isExpanded, isTruncatable, onToggleExpand, on
             )}
           </View>
 
-          <View className="mt-1 flex-row items-center">
-            <View className="mr-[3px]">
+          <View className="mt-1 flex-row items-start">
+            <View className="mr-[3px] mt-[1px]">
               <MaterialCommunityIcons name="map-marker-outline" size={13} color="rgba(255,255,255,0.65)" />
             </View>
-            <Text className="text-[11px] text-[rgba(255,255,255,0.65)]">
+            <Text className="flex-1 pr-1 text-[11px] text-[rgba(255,255,255,0.65)]">
               {story.location}
             </Text>
           </View>

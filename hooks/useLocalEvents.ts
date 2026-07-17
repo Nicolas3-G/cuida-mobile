@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { collection, query, where, limit, getDocs, orderBy } from "firebase/firestore";
 import { db } from "../firebase";
+import { titleCase } from "../utils/titleCase";
 
 /** Colors per event icon type (protests, rallies, meetings, etc.) */
 const ICON_COLORS: Record<
@@ -81,12 +82,13 @@ export function useLocalEvents(city: string | null, refreshKey: number = 0) {
               const time = event.startTime
                 ? `${event.startTime}${event.endTime ? ` – ${event.endTime}` : ""}`
                 : "";
+              // venue/address keep their authored casing; city fallbacks are
+              // lowercase-normalized query keys and need title-casing for display
               const location =
                 event.venueShort ||
                 event.venue ||
                 event.address ||
-                event.location ||
-                normalizedCity;
+                titleCase(event.location || normalizedCity);
               const icon = event.icon || "hand-front-right";
               const { color, bg, border } = getColorsForIcon(icon);
               return {

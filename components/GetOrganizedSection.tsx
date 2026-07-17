@@ -20,7 +20,7 @@ const GetOrganizedSection = ({
   return (
     <View className="mb-5">
       <Text className="mb-1 px-5 text-[18px] font-bold text-[#4E342E]">
-        Get Organized
+        Events Near You
       </Text>
       <Text className="mb-3 px-5 text-[13px] text-[#6D4C41]">
         Protests & events happening near you
