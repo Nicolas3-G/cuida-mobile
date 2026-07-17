@@ -57,7 +57,7 @@ export default function RootLayout() {
               headerStyle: { backgroundColor: CuidaTheme.colors.background },
               headerShadowVisible: false,
               headerLeft: () => (
-                <Text className="ml-1 text-2xl font-bold text-[#C2185B]">
+                <Text className="ml-1 text-2xl font-bold text-[#E2725B]">
                   Cuida
                 </Text>
               ),

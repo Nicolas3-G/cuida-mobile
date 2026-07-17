@@ -49,7 +49,7 @@ export function AnimatedSplashScreen({ onAnimationComplete }: AnimatedSplashScre
     return (
         <Animated.View style={[StyleSheet.absoluteFill, styles.container, animatedStyle]}>
             <Animated.Image
-                source={require('../assets/images/splash-icon.png')}
+                source={require('../assets/images/cuida-splash-icon.png')}
                 style={styles.image}
                 resizeMode="contain"
             />
@@ -59,7 +59,7 @@ export function AnimatedSplashScreen({ onAnimationComplete }: AnimatedSplashScre
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#ffffff', // Must perfectly match the app.json native splash color
+        backgroundColor: '#fff6e8', // Must perfectly match the app.json native splash color
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 9999, // Guarantee it stays above the navigation stack
