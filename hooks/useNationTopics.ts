@@ -13,11 +13,12 @@ export interface NationArticle {
   fullArticle: any;
 }
 
-export function useNationTopics() {
+export function useNationTopics(refreshKey: number = 0) {
   const [nationArticles, setNationArticles] = useState<NationArticle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    setIsLoading(true);
     let cancelled = false;
 
     async function fetchNationTopics() {
@@ -58,7 +59,7 @@ export function useNationTopics() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [refreshKey]);
 
   return { nationArticles, isLoading };
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { ScrollView, View, ActivityIndicator } from "react-native";
+import { ScrollView, View, ActivityIndicator, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -24,11 +24,14 @@ export default function HomeScreen() {
   const [savedLocation, setSavedLocation] = useState<string | null>(null);
   const [userState, setUserState] = useState('');
 
-  const { snippets, summaryArticles, allSummaryArticles, isLoading: isLoadingSnippets } = useSnippets(stateCode, savedLocation);
-  const { targetingStatus } = useTargetingStatus(savedLocation);
-  const { nationArticles, isLoading: isLoadingNation } = useNationTopics();
-  const { events: localEvents, isLoading: isLoadingEvents } = useLocalEvents(savedLocation);
-  const { organizations: localOrganizations, isLoading: isLoadingOrgs } = useLocalOrganizations(savedLocation);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const { snippets, summaryArticles, allSummaryArticles, isLoading: isLoadingSnippets } = useSnippets(stateCode, savedLocation, refreshKey);
+  const { targetingStatus } = useTargetingStatus(savedLocation, refreshKey);
+  const { nationArticles, isLoading: isLoadingNation } = useNationTopics(refreshKey);
+  const { events: localEvents, isLoading: isLoadingEvents } = useLocalEvents(savedLocation, refreshKey);
+  const { organizations: localOrganizations, isLoading: isLoadingOrgs } = useLocalOrganizations(savedLocation, refreshKey);
 
   const [expandedStoryIds, setExpandedStoryIds] = useState<Set<string>>(new Set());
   const [truncatableStoryIds, setTruncatableStoryIds] = useState<Set<string>>(new Set());
@@ -71,6 +74,28 @@ export default function HomeScreen() {
     }
     checkOnboarding();
   }, [router]);
+
+  // End the pull-to-refresh spinner only after a refresh actually started
+  // loading and then finished (the loading flags flip on a later render).
+  const refreshStartedRef = useRef(false);
+  const anyLoading = isLoadingSnippets || isLoadingNation || isLoadingEvents || isLoadingOrgs;
+  useEffect(() => {
+    if (!isRefreshing) return;
+    if (anyLoading) {
+      refreshStartedRef.current = true;
+    } else if (refreshStartedRef.current) {
+      refreshStartedRef.current = false;
+      setIsRefreshing(false);
+    }
+  }, [isRefreshing, anyLoading]);
+
+  const handleRefresh = () => {
+    if (vibrationEnabled) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    setIsRefreshing(true);
+    setRefreshKey((k) => k + 1);
+  };
 
   const triggerHaptic = (style: Haptics.ImpactFeedbackStyle = Haptics.ImpactFeedbackStyle.Light) => {
     if (vibrationEnabled) {
@@ -128,7 +153,18 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-[#fff6e8]" edges={['bottom']}>
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            tintColor="#C2185B"
+            colors={['#C2185B']}
+          />
+        }
+      >
 
         {/* ── Activity Near You ── */}
         <ActivityNearYouSection
@@ -136,6 +172,7 @@ export default function HomeScreen() {
           triggerSelectionHaptic={triggerSelectionHaptic}
           nationArticles={nationArticles}
           summaryArticles={allSummaryArticles}
+          localEvents={localEvents}
           expandedStoryIds={expandedStoryIds}
           truncatableStoryIds={truncatableStoryIds}
           toggleExpand={toggleExpand}

@@ -28,7 +28,7 @@ const SLIDES = [
         subPoints: [
             'You have the right to remain silent.',
             'You have the right to an attorney.',
-            'You have the right aganist unreasonable searches and seizures.',
+            'You have the right against unreasonable searches and seizures.',
             'You have the right to record interactions with law enforcement.',
         ],
     },

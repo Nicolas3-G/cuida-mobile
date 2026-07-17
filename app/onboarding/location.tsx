@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, SafeAreaView, ActivityIndicator, TextInpu
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { STATE_CITIES } from '../../constants/stateCities';
+import { STATE_CITIES, IS_ALPHA_RELEASE, SUPPORTED_CITIES } from '../../constants/stateCities';
 import * as Location from 'expo-location';
 
 const US_STATES = [
@@ -42,6 +42,9 @@ export default function LocationScreen() {
         selectedStateCode ||
         US_STATES.find(s => s.name.toLowerCase() === location.trim().toLowerCase())?.code ||
         '';
+
+    const resolvedStateCities = STATE_CITIES[resolvedStateCode as keyof typeof STATE_CITIES] || [];
+    const resolvedStateName = US_STATES.find(s => s.code === resolvedStateCode)?.name || location.trim();
 
     useEffect(() => {
         if (!resolvedStateCode) {
@@ -167,30 +170,17 @@ export default function LocationScreen() {
     };
 
     const handleContinue = async () => {
-        if (!location.trim()) return;
+        // A resolved state is required — junk text can't be saved as a location
+        if (!resolvedStateCode) return;
 
         setIsSaving(true);
         try {
-            // Determine city to save for this state if we have one
-            if (resolvedStateCode) {
-                if (stateLevelOnly) {
-                    const stateName =
-                        US_STATES.find(s => s.code === resolvedStateCode)?.name || location.trim();
-                    await AsyncStorage.setItem('userLocation', stateName);
-                } else {
-                    const stateCities = STATE_CITIES[resolvedStateCode as keyof typeof STATE_CITIES] || [];
-                    const cityToSave = selectedCity || stateCities[0] || location.trim();
-                    await AsyncStorage.setItem('userLocation', cityToSave);
-                }
+            if (stateLevelOnly || resolvedStateCities.length === 0) {
+                await AsyncStorage.setItem('userLocation', resolvedStateName);
             } else {
-                // Fallback: save whatever the user typed if we can't resolve a state code
-                await AsyncStorage.setItem('userLocation', location.trim());
+                await AsyncStorage.setItem('userLocation', selectedCity || resolvedStateCities[0]);
             }
-            // Save the state code if we have it from selection, or try to find it
-            const stateCode = resolvedStateCode;
-            if (stateCode) {
-                await AsyncStorage.setItem('userStateCode', stateCode);
-            }
+            await AsyncStorage.setItem('userStateCode', resolvedStateCode);
 
             await AsyncStorage.setItem('hasSeenOnboarding', 'true');
 
@@ -228,6 +218,20 @@ export default function LocationScreen() {
                     <Text className="px-4 text-center text-base text-slate-600">
                         Cuida relies on your location to provide relevant alerts and resources. (US Only)
                     </Text>
+                    {IS_ALPHA_RELEASE && (
+                        <View className="mt-3 rounded-2xl border border-[#FFF59D] bg-[#FFF9C4] px-4 py-2.5">
+                            <Text className="text-center text-[13px] leading-[19px] text-[#8D6E00]">
+                                During early access, city-level alerts are available in {SUPPORTED_CITIES.length} cities:{' '}
+                                {SUPPORTED_CITIES.map((city, i) => (
+                                    <React.Fragment key={city}>
+                                        <Text className="font-bold">{city}</Text>
+                                        {i < SUPPORTED_CITIES.length - 2 ? ', ' : i === SUPPORTED_CITIES.length - 2 ? ' and ' : ''}
+                                    </React.Fragment>
+                                ))}
+                                . Everywhere else gets state-level coverage.
+                            </Text>
+                        </View>
+                    )}
                 </View>
 
                 {/* Input Area */}
@@ -264,6 +268,13 @@ export default function LocationScreen() {
                         )}
                     </TouchableOpacity>
 
+                    {/* Unresolved text: explain why Finish is disabled */}
+                    {location.trim().length > 0 && !resolvedStateCode && !showSuggestions && (
+                        <Text className="mt-2 ml-1 text-[13px] text-slate-500">
+                            Select a US state from the list to continue.
+                        </Text>
+                    )}
+
                     {/* Autocomplete Suggestions */}
                     {showSuggestions && (
                         <View className="absolute top-[85px] left-0 right-0 z-50 mt-1 overflow-hidden rounded-xl bg-white shadow-lg">
@@ -282,8 +293,25 @@ export default function LocationScreen() {
                     )}
                 </View>
 
+                {/* No city coverage in this state: state-level selection, shown as chosen */}
+                {resolvedStateCode && resolvedStateCities.length === 0 && (
+                    <View className="mb-4">
+                        <Text className="mb-2 ml-1 text-[13px] font-bold uppercase tracking-wide text-slate-600">
+                            Your selection
+                        </Text>
+                        <View className="self-start rounded-full border border-orange-600 bg-orange-50 py-2 px-3.5">
+                            <Text className="text-sm font-semibold text-orange-900">
+                                {resolvedStateName} — state-level alerts
+                            </Text>
+                        </View>
+                        <Text className="mt-2 ml-1 text-[13px] text-slate-500">
+                            No city-level coverage in {resolvedStateName} yet.
+                        </Text>
+                    </View>
+                )}
+
                 {/* City selection + disclaimer */}
-                {resolvedStateCode && (
+                {resolvedStateCode && resolvedStateCities.length > 0 && (
                     <View className="mb-4">
                         <View className="mb-2 ml-1 flex-row items-center justify-start gap-1.5">
                             <Text className="text-[13px] font-bold uppercase tracking-wide text-slate-600">
@@ -349,11 +377,11 @@ export default function LocationScreen() {
                     <TouchableOpacity
                         activeOpacity={0.8}
                         onPress={handleContinue}
-                        disabled={!location.trim() || isSaving}
-                        className={`w-full flex-row items-center justify-center rounded-2xl py-[18px] ${location.trim() ? 'bg-orange-600' : 'bg-slate-300'}`}
+                        disabled={!resolvedStateCode || isSaving}
+                        className={`w-full flex-row items-center justify-center rounded-2xl py-[18px] ${resolvedStateCode ? 'bg-orange-600' : 'bg-slate-300'}`}
                         // Use regular style here for shadow because tailwind shadow was crashing the app
                         style={
-                            location.trim()
+                            resolvedStateCode
                                 ? {
                                       shadowColor: '#F57C00',
                                       shadowOffset: { width: 0, height: 4 },

@@ -18,7 +18,7 @@ export interface LocalOrganization {
   };
 }
 
-export function useLocalOrganizations(city: string | null) {
+export function useLocalOrganizations(city: string | null, refreshKey: number = 0) {
   const [organizations, setOrganizations] = useState<LocalOrganization[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -28,6 +28,7 @@ export function useLocalOrganizations(city: string | null) {
       return;
     }
 
+    setIsLoading(true);
     let cancelled = false;
     const normalizedCity = city.trim().toLowerCase();
 
@@ -72,7 +73,7 @@ export function useLocalOrganizations(city: string | null) {
     return () => {
       cancelled = true;
     };
-  }, [city]);
+  }, [city, refreshKey]);
 
   return { organizations, isLoading };
 }

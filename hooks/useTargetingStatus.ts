@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { collection, query, where, limit, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 
-export function useTargetingStatus(city: string | null) {
+export function useTargetingStatus(city: string | null, refreshKey: number = 0) {
   const [targetingStatus, setTargetingStatus] = useState<number>(0);
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export function useTargetingStatus(city: string | null) {
     return () => {
       cancelled = true;
     };
-  }, [city]);
+  }, [city, refreshKey]);
 
   return { targetingStatus };
 }

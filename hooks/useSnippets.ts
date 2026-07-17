@@ -28,7 +28,7 @@ export interface SummaryArticle {
   fullArticle: Article;
 }
 
-export function useSnippets(stateCode: string | null, city: string | null) {
+export function useSnippets(stateCode: string | null, city: string | null, refreshKey: number = 0) {
   const [snippets, setSnippets] = useState<Snippet[]>([]);
   const [summaryArticles, setSummaryArticles] = useState<SummaryArticle[]>([]);
   const [allSummaryArticles, setAllSummaryArticles] = useState<SummaryArticle[]>([]);
@@ -40,6 +40,7 @@ export function useSnippets(stateCode: string | null, city: string | null) {
       return;
     }
 
+    setIsLoading(true);
     let cancelled = false;
 
     async function fetchSnippets() {
@@ -172,7 +173,7 @@ export function useSnippets(stateCode: string | null, city: string | null) {
     return () => {
       cancelled = true;
     };
-  }, [stateCode, city]);
+  }, [stateCode, city, refreshKey]);
 
   return { snippets, summaryArticles, allSummaryArticles, isLoading };
 }

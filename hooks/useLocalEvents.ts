@@ -45,7 +45,7 @@ export interface LocalEvent {
   description: string;
 }
 
-export function useLocalEvents(city: string | null) {
+export function useLocalEvents(city: string | null, refreshKey: number = 0) {
   const [events, setEvents] = useState<LocalEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -55,6 +55,7 @@ export function useLocalEvents(city: string | null) {
       return;
     }
 
+    setIsLoading(true);
     let cancelled = false;
     const normalizedCity = city.trim().toLowerCase();
 
@@ -118,7 +119,7 @@ export function useLocalEvents(city: string | null) {
     return () => {
       cancelled = true;
     };
-  }, [city]);
+  }, [city, refreshKey]);
 
   return { events, isLoading };
 }

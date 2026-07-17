@@ -4,7 +4,7 @@ import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
-import { STATE_CITIES } from '../constants/stateCities';
+import { STATE_CITIES, IS_ALPHA_RELEASE, SUPPORTED_CITIES } from '../constants/stateCities';
 
 const LANGUAGES = [
     { code: 'en', label: 'English' },
@@ -109,6 +109,9 @@ export default function SettingsScreen() {
         selectedStateCode ||
         US_STATES.find(s => s.name.toLowerCase() === locationStateInput.trim().toLowerCase())?.code ||
         '';
+
+    const resolvedStateCities = STATE_CITIES[resolvedStateCode as keyof typeof STATE_CITIES] || [];
+    const resolvedStateName = US_STATES.find(s => s.code === resolvedStateCode)?.name || locationStateInput.trim();
 
     useEffect(() => {
         if (!resolvedStateCode) {
@@ -236,27 +239,18 @@ export default function SettingsScreen() {
 
     const handleSaveLocation = async () => {
         try {
-            const trimmedState = locationStateInput.trim();
-            if (!trimmedState) return;
+            // A resolved state is required — junk text can't be saved as a location
+            if (!resolvedStateCode) return;
 
-            if (resolvedStateCode) {
-                if (stateLevelOnly) {
-                    const stateName =
-                        US_STATES.find(s => s.code === resolvedStateCode)?.name || trimmedState;
-                    await AsyncStorage.setItem('userLocation', stateName);
-                    await AsyncStorage.setItem('userStateCode', resolvedStateCode);
-                    setLocation(stateName);
-                } else {
-                    const stateCities = STATE_CITIES[resolvedStateCode as keyof typeof STATE_CITIES] || [];
-                    const cityToSave = selectedCity || stateCities[0] || trimmedState;
-                    await AsyncStorage.setItem('userLocation', cityToSave);
-                    await AsyncStorage.setItem('userStateCode', resolvedStateCode);
-                    setLocation(cityToSave);
-                }
+            if (stateLevelOnly || resolvedStateCities.length === 0) {
+                await AsyncStorage.setItem('userLocation', resolvedStateName);
+                await AsyncStorage.setItem('userStateCode', resolvedStateCode);
+                setLocation(resolvedStateName);
             } else {
-                await AsyncStorage.setItem('userLocation', trimmedState);
-                await AsyncStorage.removeItem('userStateCode');
-                setLocation(trimmedState);
+                const cityToSave = selectedCity || resolvedStateCities[0];
+                await AsyncStorage.setItem('userLocation', cityToSave);
+                await AsyncStorage.setItem('userStateCode', resolvedStateCode);
+                setLocation(cityToSave);
             }
 
             setExpandedItem(null);
@@ -422,6 +416,20 @@ export default function SettingsScreen() {
                         {/* Location Dropdown Content */}
                         {expandedItem === 'location' && (
                             <View className="border-t border-slate-200 bg-slate-50 p-4">
+                                {IS_ALPHA_RELEASE && (
+                                    <View className="mb-3 rounded-2xl border border-[#FFF59D] bg-[#FFF9C4] px-3.5 py-2.5">
+                                        <Text className="text-[13px] leading-[19px] text-[#8D6E00]">
+                                            During early access, city-level alerts are available in {SUPPORTED_CITIES.length} cities:{' '}
+                                            {SUPPORTED_CITIES.map((city, i) => (
+                                                <React.Fragment key={city}>
+                                                    <Text className="font-bold">{city}</Text>
+                                                    {i < SUPPORTED_CITIES.length - 2 ? ', ' : i === SUPPORTED_CITIES.length - 2 ? ' and ' : ''}
+                                                </React.Fragment>
+                                            ))}
+                                            . Everywhere else gets state-level coverage.
+                                        </Text>
+                                    </View>
+                                )}
                                 <Text className="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">
                                     US State
                                 </Text>
@@ -455,6 +463,12 @@ export default function SettingsScreen() {
                                         )}
                                     </TouchableOpacity>
 
+                                    {locationStateInput.trim().length > 0 && !resolvedStateCode && !showSuggestions && (
+                                        <Text className="mt-2 ml-0.5 text-[13px] text-slate-500">
+                                            Select a US state from the list to save.
+                                        </Text>
+                                    )}
+
                                     {showSuggestions && (
                                         <View className="mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white">
                                             {filteredStates.map(state => (
@@ -471,7 +485,23 @@ export default function SettingsScreen() {
                                     )}
                                 </View>
 
-                                {resolvedStateCode && (
+                                {resolvedStateCode && resolvedStateCities.length === 0 && (
+                                    <View className="mt-2">
+                                        <Text className="mb-2 ml-0.5 text-xs font-bold uppercase tracking-wide text-slate-600">
+                                            Your selection
+                                        </Text>
+                                        <View className="self-start rounded-full border border-orange-600 bg-orange-50 py-1.5 px-3">
+                                            <Text className="text-[13px] font-semibold text-orange-900">
+                                                {resolvedStateName} — state-level alerts
+                                            </Text>
+                                        </View>
+                                        <Text className="mt-2 ml-0.5 text-[13px] text-slate-500">
+                                            No city-level coverage in {resolvedStateName} yet.
+                                        </Text>
+                                    </View>
+                                )}
+
+                                {resolvedStateCode && resolvedStateCities.length > 0 && (
                                     <View className="mt-2">
                                         <View className="mb-2 ml-0.5 flex-row items-center justify-start gap-1.5">
                                             <Text className="text-xs font-bold uppercase tracking-wide text-slate-600">
@@ -536,8 +566,8 @@ export default function SettingsScreen() {
                                     <TouchableOpacity
                                         activeOpacity={0.7}
                                         onPress={handleSaveLocation}
-                                        disabled={!locationStateInput.trim()}
-                                        className={`rounded-xl py-2.5 px-[18px] ${locationStateInput.trim() ? 'bg-orange-600' : 'bg-slate-300'}`}
+                                        disabled={!resolvedStateCode}
+                                        className={`rounded-xl py-2.5 px-[18px] ${resolvedStateCode ? 'bg-orange-600' : 'bg-slate-300'}`}
                                     >
                                         <Text className="text-sm font-bold text-white">Save</Text>
                                     </TouchableOpacity>

@@ -531,7 +531,7 @@ export default function VolunteerScreen() {
             </View>
             <Text className="text-[28px] font-extrabold text-[#4E342E] text-center mb-3">You're in the Network!</Text>
             <Text className="text-[15px] text-[#6D4C41] text-center leading-[22px] mb-8">
-                Thank you for stepping up. Matched organizations have been notified and will reach out to you via phone when help is needed.
+                Thank you for stepping up. You're now part of the Cuida Volunteer Network, and organizations in your area will be able to reach out to you when help is needed. Want to start right away? Check out the places near you that need volunteers on the signup page.
             </Text>
 
             <TouchableOpacity

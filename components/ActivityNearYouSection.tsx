@@ -5,14 +5,6 @@ import * as Haptics from 'expo-haptics';
 
 const NEWS_CARD_WIDTH = 232; // 220 + 12 gap
 
-const NEWS_STORIES = [
-  { id: '1', category: 'Alert', title: 'ICE checkpoint reported near Central Ave', location: 'Central Ave, 0.4 mi away', color: '#C62828', icon: 'alert-outline' },
-  { id: '2', category: 'Know Your Rights', title: "You have the right to remain silent — here's what to say", location: 'Tap to read', color: '#6A1B9A', icon: 'scale-balance' },
-  { id: '3', category: 'Operation Report', title: 'Increased enforcement spotted near Eastside Market', location: 'Eastside, 1.1 mi away', color: '#E65100', icon: 'clipboard-text-outline' },
-  { id: '4', category: 'Get Involved', title: 'Community rapid response network meeting this Friday', location: 'Community Center, 0.6 mi away', color: '#2E7D32', icon: 'hand-front-right' },
-  { id: '5', category: 'Resource', title: 'Free legal consultations — immigration attorneys on call', location: 'Legal Aid Office, 1.8 mi away', color: '#00897B', icon: 'phone-outline' },
-];
-
 interface AnimatedNewsCardProps {
   story: any;
   isExpanded: boolean;
@@ -122,6 +114,7 @@ interface ActivityNearYouSectionProps {
   triggerSelectionHaptic: () => void;
   nationArticles: any[];
   summaryArticles: any[];
+  localEvents: any[];
   expandedStoryIds: Set<string>;
   truncatableStoryIds: Set<string>;
   toggleExpand: (id: string) => void;
@@ -134,12 +127,54 @@ const ActivityNearYouSection = ({
   triggerSelectionHaptic,
   nationArticles,
   summaryArticles,
+  localEvents,
   expandedStoryIds,
   truncatableStoryIds,
   toggleExpand,
   handleTextLayout,
   vibrationEnabled,
 }: ActivityNearYouSectionProps) => {
+  // Surface the first nearby event (from the Get Organized data) as a card
+  const nearbyEvent = localEvents.length > 0 ? localEvents[0] : null;
+  const eventCard = nearbyEvent
+    ? {
+        id: `activity-event-${nearbyEvent.id}`,
+        category: 'Event near you',
+        title: nearbyEvent.title,
+        location: [nearbyEvent.location, nearbyEvent.date].filter(Boolean).join(' · '),
+        color: '#00897B',
+        icon: nearbyEvent.icon,
+        link: nearbyEvent.url,
+      }
+    : null;
+
+  const interleaved: any[] = [];
+  const maxLen = Math.max(nationArticles.length, summaryArticles.length);
+  for (let i = 0; i < maxLen; i++) {
+    if (i < nationArticles.length) interleaved.push(nationArticles[i]);
+    if (i < summaryArticles.length) interleaved.push(summaryArticles[i]);
+  }
+  // Event card slots in as the third card (or at the end if fewer articles)
+  const cards = [...interleaved];
+  if (eventCard) {
+    cards.splice(Math.min(2, cards.length), 0, eventCard);
+  }
+
+  if (cards.length === 0) {
+    return (
+      <View className="mt-4 mb-6">
+        <Text className="text-slate-800 text-lg font-bold px-5 mb-3">
+          Activity near you
+        </Text>
+        <View className="mx-5 rounded-2xl border border-slate-200 bg-white px-4 py-5">
+          <Text className="text-center text-[13px] text-slate-500">
+            No recent activity found — check back later.
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View className="mt-4 mb-6">
       <Text className="text-slate-800 text-lg font-bold px-5 mb-3">
@@ -159,15 +194,7 @@ const ActivityNearYouSection = ({
           }
         }}
       >
-        {(() => {
-          const interleaved: any[] = [];
-          const maxLen = Math.max(nationArticles.length, summaryArticles.length);
-          for (let i = 0; i < maxLen; i++) {
-            if (i < nationArticles.length) interleaved.push(nationArticles[i]);
-            if (i < summaryArticles.length) interleaved.push(summaryArticles[i]);
-          }
-          return [...interleaved, ...NEWS_STORIES];
-        })().map((story) => (
+        {cards.map((story) => (
           <AnimatedNewsCard
             key={story.id}
             story={story}
