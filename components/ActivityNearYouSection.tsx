@@ -2,8 +2,22 @@ import React, { useRef, type MutableRefObject } from 'react';
 import { ScrollView, Text, View, Animated, Pressable, TouchableOpacity, Linking } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { useTranslation } from '../contexts/LanguageContext';
 
 const NEWS_CARD_WIDTH = 232; // 220 + 12 gap
+
+// Data hooks emit fixed English category/fallback labels; map them to locale keys at render time
+const CATEGORY_KEYS: Record<string, string> = {
+  'Local Coverage': 'home.categoryLocal',
+  'Statewide coverage': 'home.categoryStatewide',
+  'National Update': 'home.categoryNational',
+};
+
+const LOCATION_KEYS: Record<string, string> = {
+  'Local Source': 'home.sourceLocal',
+  'Statewide source': 'home.sourceStatewide',
+  'Nationwide': 'home.sourceNationwide',
+};
 
 interface AnimatedNewsCardProps {
   story: any;
@@ -15,6 +29,7 @@ interface AnimatedNewsCardProps {
 }
 
 const AnimatedNewsCard = ({ story, isExpanded, isTruncatable, onToggleExpand, onTextLayout, vibrationEnabled }: AnimatedNewsCardProps) => {
+  const { t } = useTranslation();
   const scaleValue = useRef(new Animated.Value(1)).current;
 
   const triggerHaptic = () => {
@@ -62,7 +77,7 @@ const AnimatedNewsCard = ({ story, isExpanded, isTruncatable, onToggleExpand, on
         <View className="flex-1 justify-between p-3">
           <View>
             <Text className="mb-1 text-[10px] font-semibold uppercase text-[rgba(255,255,255,0.75)]">
-              {story.category}
+              {CATEGORY_KEYS[story.category] ? t(CATEGORY_KEYS[story.category]) : story.category}
             </Text>
 
             <Text
@@ -89,7 +104,7 @@ const AnimatedNewsCard = ({ story, isExpanded, isTruncatable, onToggleExpand, on
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 <Text className="text-[11px] font-semibold text-[rgba(255,255,255,0.8)] underline">
-                  {isExpanded ? 'Show less' : 'More'}
+                  {isExpanded ? t('home.showLess') : t('home.more')}
                 </Text>
               </TouchableOpacity>
             )}
@@ -100,7 +115,7 @@ const AnimatedNewsCard = ({ story, isExpanded, isTruncatable, onToggleExpand, on
               <MaterialCommunityIcons name="map-marker-outline" size={13} color="rgba(255,255,255,0.65)" />
             </View>
             <Text className="flex-1 pr-1 text-[11px] text-[rgba(255,255,255,0.65)]">
-              {story.location}
+              {LOCATION_KEYS[story.location] ? t(LOCATION_KEYS[story.location]) : story.location}
             </Text>
           </View>
         </View>
@@ -134,12 +149,13 @@ const ActivityNearYouSection = ({
   handleTextLayout,
   vibrationEnabled,
 }: ActivityNearYouSectionProps) => {
+  const { t } = useTranslation();
   // Surface the first nearby event (from the Get Organized data) as a card
   const nearbyEvent = localEvents.length > 0 ? localEvents[0] : null;
   const eventCard = nearbyEvent
     ? {
         id: `activity-event-${nearbyEvent.id}`,
-        category: 'Event near you',
+        category: t('home.eventNearYou'),
         title: nearbyEvent.title,
         location: [nearbyEvent.location, nearbyEvent.date].filter(Boolean).join(' · '),
         color: '#00897B',
@@ -164,11 +180,11 @@ const ActivityNearYouSection = ({
     return (
       <View className="mt-4 mb-6">
         <Text className="text-slate-800 text-lg font-bold px-5 mb-3">
-          Activity near you
+          {t('home.activityNearYou')}
         </Text>
         <View className="mx-5 rounded-2xl border border-slate-200 bg-white px-4 py-5">
           <Text className="text-center text-[13px] text-slate-500">
-            No recent activity found — check back later.
+            {t('home.noRecentActivity')}
           </Text>
         </View>
       </View>
@@ -178,7 +194,7 @@ const ActivityNearYouSection = ({
   return (
     <View className="mt-4 mb-6">
       <Text className="text-slate-800 text-lg font-bold px-5 mb-3">
-        Activity near you
+        {t('home.activityNearYou')}
       </Text>
       <ScrollView
         horizontal

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { ActivityIndicator, Text, View, Animated, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from '../contexts/LanguageContext';
 
 interface Snippet {
   snippetText: string;
@@ -15,6 +16,7 @@ interface AnimatedSummaryItemProps {
 }
 
 const AnimatedSummaryItem = ({ snippet, index, onOpenArticles }: AnimatedSummaryItemProps) => {
+  const { t } = useTranslation();
   const slideAnim = useRef(new Animated.Value(50)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -54,7 +56,7 @@ const AnimatedSummaryItem = ({ snippet, index, onOpenArticles }: AnimatedSummary
             <Text
               className={`text-[10px] font-bold uppercase tracking-wide ${snippet.scope === 'local' ? 'text-[#2E7D32]' : 'text-[#1565C0]'}`}
             >
-              {snippet.scope === 'local' ? 'Near you' : 'In your state'}
+              {snippet.scope === 'local' ? t('home.nearYouBadge') : t('home.inYourStateBadge')}
             </Text>
           </View>
         )}
@@ -64,7 +66,7 @@ const AnimatedSummaryItem = ({ snippet, index, onOpenArticles }: AnimatedSummary
             onPress={() => onOpenArticles(snippet)}
             className="self-start rounded-md bg-[#FFF8E1] px-2.5 py-1"
           >
-            <Text className="text-[11px] font-semibold text-[#E65100]">More ›</Text>
+            <Text className="text-[11px] font-semibold text-[#E65100]">{t('home.moreArrow')}</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -87,12 +89,13 @@ const DailySummarySection = ({
   snippets,
   openArticles,
 }: DailySummarySectionProps) => {
+  const { t } = useTranslation();
   return (
     <View className="mx-5 mb-5 rounded-2xl border border-[#D7CCC8] bg-[#fff6e8] p-5 shadow-md">
       <View className="mb-3.5 flex-row items-center">
-        <Text className="text-[18px] font-bold text-[#4E342E]">Summary for {userState}</Text>
+        <Text className="text-[18px] font-bold text-[#4E342E]">{t('home.summaryFor', { location: userState })}</Text>
         <View className="ml-2 rounded-md bg-[#FFEBEE] px-2 py-0.5">
-          <Text className="text-[11px] font-bold text-[#C62828]">LIVE</Text>
+          <Text className="text-[11px] font-bold text-[#C62828]">{t('home.live')}</Text>
         </View>
       </View>
 
@@ -106,7 +109,7 @@ const DailySummarySection = ({
             />
           </View>
           <Text className="flex-1 text-[13px] font-bold text-[#E65100]">
-            Increased enforcement expected soon in {userState}
+            {t('home.enforcementExpected', { location: userState })}
           </Text>
         </View>
       )}
@@ -121,7 +124,7 @@ const DailySummarySection = ({
             />
           </View>
           <Text className="flex-1 text-sm font-bold text-white">
-            Increased enforcement targeting {userState}
+            {t('home.enforcementTargeting', { location: userState })}
           </Text>
         </View>
       )}
@@ -139,7 +142,7 @@ const DailySummarySection = ({
         ))
       ) : (
         <Text className="my-2.5 text-center text-[13px] text-[#6D4C41]">
-          No recent alerts for {userState}.
+          {t('home.noRecentAlerts', { location: userState })}
         </Text>
       )}
     </View>

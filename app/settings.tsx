@@ -5,12 +5,12 @@ import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import { STATE_CITIES, IS_ALPHA_RELEASE, SUPPORTED_CITIES } from '../constants/stateCities';
+import { useTranslation, type Language } from '../contexts/LanguageContext';
 
+// Portuguese and Somali are planned but not yet translated — see IDEAS.md
 const LANGUAGES = [
     { code: 'en', label: 'English' },
     { code: 'es', label: 'Español' },
-    { code: 'pt', label: 'Português' },
-    { code: 'so', label: 'Soomaali' },
 ];
 
 const US_STATES = [
@@ -35,6 +35,7 @@ const US_STATES = [
 
 export default function SettingsScreen() {
     const router = useRouter();
+    const { t, setLanguage: setAppLanguage } = useTranslation();
     const [language, setLanguage] = useState<string | null>(null);
     const [location, setLocation] = useState<string | null>(null);
     const [vibrationEnabled, setVibrationEnabled] = useState<boolean>(true);
@@ -103,7 +104,7 @@ export default function SettingsScreen() {
 
     const handleSaveLanguage = async (code: string) => {
         try {
-            await AsyncStorage.setItem('userLanguage', code);
+            await setAppLanguage(code as Language);
             setLanguage(code);
             setExpandedItem(null);
         } catch (error) {
@@ -171,8 +172,8 @@ export default function SettingsScreen() {
             const { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
                 Alert.alert(
-                    'Location permission required',
-                    'Please enable location access to use this feature.'
+                    t('onboarding.locationPermissionTitle'),
+                    t('onboarding.locationPermissionBody')
                 );
                 setIsLocating(false);
                 return;
@@ -185,7 +186,7 @@ export default function SettingsScreen() {
             });
 
             if (!results.length) {
-                Alert.alert('Unable to detect location', 'Please try again or enter your state manually.');
+                Alert.alert(t('onboarding.locationDetectFailTitle'), t('onboarding.locationDetectFailBody'));
                 setIsLocating(false);
                 return;
             }
@@ -215,8 +216,8 @@ export default function SettingsScreen() {
 
             if (!matchedState) {
                 Alert.alert(
-                    'Unable to detect state',
-                    'We could not match your state. Please enter it manually.'
+                    t('onboarding.stateDetectFailTitle'),
+                    t('onboarding.stateDetectFailBody')
                 );
                 setIsLocating(false);
                 return;
@@ -237,7 +238,7 @@ export default function SettingsScreen() {
             }
         } catch (error) {
             console.error('Error using current location:', error);
-            Alert.alert('Error', 'Something went wrong while detecting your location.');
+            Alert.alert(t('onboarding.locationErrorTitle'), t('onboarding.locationErrorBody'));
         } finally {
             setIsLocating(false);
         }
@@ -299,7 +300,7 @@ export default function SettingsScreen() {
             const next = !devMode;
             setDevMode(next);
             AsyncStorage.setItem('devModeEnabled', String(next)).catch(() => {});
-            Alert.alert('Dev mode', next ? 'Dev mode enabled' : 'Dev mode disabled');
+            Alert.alert(t('settings.devModeTitle'), next ? t('settings.devModeEnabled') : t('settings.devModeDisabled'));
         }
     };
 
@@ -336,11 +337,11 @@ export default function SettingsScreen() {
             if (canOpen) {
                 await Linking.openURL(url);
             } else {
-                Alert.alert('Unable to open link', 'Please try again later.');
+                Alert.alert(t('settings.linkErrorTitle'), t('settings.linkErrorBody'));
             }
         } catch (error) {
             console.error('Error opening support link:', error);
-            Alert.alert('Unable to open link', 'Please try again later.');
+            Alert.alert(t('settings.linkErrorTitle'), t('settings.linkErrorBody'));
         }
     };
 
@@ -374,7 +375,7 @@ export default function SettingsScreen() {
                     <View className="mb-4">
                         <View className="relative items-center justify-center">
                             <Text className="text-2xl font-extrabold text-slate-800 text-center">
-                                Settings
+                                {t('settings.title')}
                             </Text>
                             <TouchableOpacity
                                 onPress={() => router.back()}
@@ -386,7 +387,7 @@ export default function SettingsScreen() {
                         </View>
                     </View>
                     <Text className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 ml-2">
-                        Preferences
+                        {t('settings.preferences')}
                     </Text>
 
                     <View className="bg-white rounded-2xl border border-slate-200 overflow-hidden mb-6">
@@ -401,11 +402,11 @@ export default function SettingsScreen() {
                                 <View className="mr-3">
                                     <MaterialCommunityIcons name="earth" size={20} color="#6D4C41" />
                                 </View>
-                                <Text className="text-base font-semibold text-slate-700">Language</Text>
+                                <Text className="text-base font-semibold text-slate-700">{t('settings.language')}</Text>
                             </View>
                             <View className="flex-row items-center">
                                 <Text className="text-base text-slate-500 mr-2">
-                                    {language ? languageMap[language] : 'Not Set'}
+                                    {language ? languageMap[language] : t('settings.notSet')}
                                 </Text>
                                 <Text className="text-slate-400 text-lg">
                                     {expandedItem === 'language' ? '▲' : '▼'}
@@ -445,11 +446,11 @@ export default function SettingsScreen() {
                                 <View className="mr-3">
                                     <MaterialCommunityIcons name="map-marker-outline" size={20} color="#6D4C41" />
                                 </View>
-                                <Text className="text-base font-semibold text-slate-700">Location</Text>
+                                <Text className="text-base font-semibold text-slate-700">{t('settings.location')}</Text>
                             </View>
                             <View className="flex-row items-center">
                                 <Text className="text-base text-slate-500 mr-2">
-                                    {location || 'Not Set'}
+                                    {location || t('settings.notSet')}
                                 </Text>
                                 <Text className="text-slate-400 text-lg">
                                     {expandedItem === 'location' ? '▲' : '▼'}
@@ -463,24 +464,24 @@ export default function SettingsScreen() {
                                 {IS_ALPHA_RELEASE && (
                                     <View className="mb-3 rounded-2xl border border-[#FFF59D] bg-[#FFF9C4] px-3.5 py-2.5">
                                         <Text className="text-[13px] leading-[19px] text-[#8D6E00]">
-                                            During early access, city-level alerts are available in {SUPPORTED_CITIES.length} cities:{' '}
+                                            {t('settings.earlyAccessHintPrefix', { count: SUPPORTED_CITIES.length })}
                                             {SUPPORTED_CITIES.map((city, i) => (
                                                 <React.Fragment key={city}>
                                                     <Text className="font-bold">{city}</Text>
-                                                    {i < SUPPORTED_CITIES.length - 2 ? ', ' : i === SUPPORTED_CITIES.length - 2 ? ' and ' : ''}
+                                                    {i < SUPPORTED_CITIES.length - 2 ? ', ' : i === SUPPORTED_CITIES.length - 2 ? ` ${t('common.and')} ` : ''}
                                                 </React.Fragment>
                                             ))}
-                                            . Everywhere else gets state-level coverage.
+                                            {t('settings.earlyAccessHintSuffix')}
                                         </Text>
                                     </View>
                                 )}
                                 <Text className="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">
-                                    US State
+                                    {t('settings.usStateLabel')}
                                 </Text>
                                 <View className="mb-2">
                                     <TextInput
                                         className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-base text-slate-800"
-                                        placeholder="Type your state (e.g. California)"
+                                        placeholder={t('settings.statePlaceholder')}
                                         placeholderTextColor="#94a3b8"
                                         value={locationStateInput}
                                         onChangeText={handleLocationInputChange}
@@ -501,7 +502,7 @@ export default function SettingsScreen() {
                                                     <Ionicons name="locate-outline" size={16} color="#475569" />
                                                 </View>
                                                 <Text className="text-[13px] font-semibold text-slate-600">
-                                                    Use my location
+                                                    {t('settings.useMyLocation')}
                                                 </Text>
                                             </>
                                         )}
@@ -509,7 +510,7 @@ export default function SettingsScreen() {
 
                                     {locationStateInput.trim().length > 0 && !resolvedStateCode && !showSuggestions && (
                                         <Text className="mt-2 ml-0.5 text-[13px] text-slate-500">
-                                            Select a US state from the list to save.
+                                            {t('settings.selectStateHint')}
                                         </Text>
                                     )}
 
@@ -532,15 +533,15 @@ export default function SettingsScreen() {
                                 {resolvedStateCode && resolvedStateCities.length === 0 && (
                                     <View className="mt-2">
                                         <Text className="mb-2 ml-0.5 text-xs font-bold uppercase tracking-wide text-slate-600">
-                                            Your selection
+                                            {t('settings.yourSelection')}
                                         </Text>
                                         <View className="self-start rounded-full border border-orange-600 bg-orange-50 py-1.5 px-3">
                                             <Text className="text-[13px] font-semibold text-orange-900">
-                                                {resolvedStateName} — state-level alerts
+                                                {t('settings.stateLevelAlertsChip', { state: resolvedStateName })}
                                             </Text>
                                         </View>
                                         <Text className="mt-2 ml-0.5 text-[13px] text-slate-500">
-                                            No city-level coverage in {resolvedStateName} yet.
+                                            {t('settings.noCityCoverage', { state: resolvedStateName })}
                                         </Text>
                                     </View>
                                 )}
@@ -549,7 +550,7 @@ export default function SettingsScreen() {
                                     <View className="mt-2">
                                         <View className="mb-2 ml-0.5 flex-row items-center justify-start gap-1.5">
                                             <Text className="text-xs font-bold uppercase tracking-wide text-slate-600">
-                                                City options
+                                                {t('settings.cityOptions')}
                                             </Text>
                                             <TouchableOpacity
                                                 onPress={() => setShowCityInfo(prev => !prev)}
@@ -562,8 +563,7 @@ export default function SettingsScreen() {
                                         {showCityInfo && (
                                             <View className="mx-0.5 mb-2.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
                                                 <Text className="text-[13px] text-slate-500">
-                                                    We currently only support these cities. If you prefer state-wide data,
-                                                    you can choose &quot;State level only&quot; instead.
+                                                    {t('settings.cityInfoText')}
                                                 </Text>
                                             </View>
                                         )}
@@ -600,7 +600,7 @@ export default function SettingsScreen() {
                                             <Text
                                                 className={`text-[13px] font-semibold ${stateLevelOnly ? 'text-orange-900' : 'text-slate-600'}`}
                                             >
-                                                State level only
+                                                {t('settings.stateLevelOnly')}
                                             </Text>
                                         </TouchableOpacity>
                                     </View>
@@ -613,7 +613,7 @@ export default function SettingsScreen() {
                                         disabled={!resolvedStateCode}
                                         className={`rounded-xl py-2.5 px-[18px] ${resolvedStateCode ? 'bg-orange-600' : 'bg-slate-300'}`}
                                     >
-                                        <Text className="text-sm font-bold text-white">Update</Text>
+                                        <Text className="text-sm font-bold text-white">{t('settings.update')}</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
@@ -633,11 +633,11 @@ export default function SettingsScreen() {
                                         color="#6D4C41"
                                     />
                                 </View>
-                                <Text className="text-base font-semibold text-slate-700">Vibrations</Text>
+                                <Text className="text-base font-semibold text-slate-700">{t('settings.vibration')}</Text>
                             </View>
                             <View className="flex-row items-center">
                                 <Text className={`text-base font-bold ${vibrationEnabled ? 'text-orange-600' : 'text-slate-400'}`}>
-                                    {vibrationEnabled ? 'ON' : 'OFF'}
+                                    {vibrationEnabled ? t('settings.on') : t('settings.off')}
                                 </Text>
                                 <View
                                     className={`w-10 h-6 rounded-full ml-3 items-start justify-center px-1 ${vibrationEnabled ? 'bg-orange-600' : 'bg-slate-300'}`}
@@ -659,7 +659,7 @@ export default function SettingsScreen() {
                                 <View className="mr-3">
                                     <MaterialCommunityIcons name="refresh" size={20} color="#6D4C41" />
                                 </View>
-                                <Text className="text-base font-semibold text-slate-700">Refresh data</Text>
+                                <Text className="text-base font-semibold text-slate-700">{t('settings.refreshData')}</Text>
                             </View>
                             <Text className="text-slate-400 text-lg">›</Text>
                         </TouchableOpacity>
@@ -676,7 +676,7 @@ export default function SettingsScreen() {
                                     <View className="mr-3">
                                         <MaterialCommunityIcons name="alert-outline" size={20} color="#6D4C41" />
                                     </View>
-                                    <Text className="text-base font-semibold text-slate-700">Reset onboarding</Text>
+                                    <Text className="text-base font-semibold text-slate-700">{t('settings.resetOnboarding')}</Text>
                                 </View>
                                 <Text className="text-slate-400 text-lg">›</Text>
                             </TouchableOpacity>
@@ -692,7 +692,7 @@ export default function SettingsScreen() {
                                 <View className="mr-3">
                                     <MaterialCommunityIcons name="message-text-outline" size={20} color="#6D4C41" />
                                 </View>
-                                <Text className="text-base font-semibold text-slate-700">Send feedback</Text>
+                                <Text className="text-base font-semibold text-slate-700">{t('settings.sendFeedback')}</Text>
                             </View>
                             <Text className="text-slate-400 text-lg">›</Text>
                         </TouchableOpacity>
@@ -705,7 +705,7 @@ export default function SettingsScreen() {
                             suppressHighlighting
                             className="text-center text-slate-500 text-xs mb-2 px-4"
                         >
-                            Cuida is a free platform built by a solo immigrant developer. Your support helps keep it running.
+                            {t('settings.supportText')}
                         </Text>
                         <TouchableOpacity
                             activeOpacity={0.8}
@@ -713,7 +713,7 @@ export default function SettingsScreen() {
                             className="w-full rounded-[14px] py-[14px] items-center bg-[#F57C00]"
                         >
                             <Text className="text-white text-[15px] font-bold">
-                                Support the project
+                                {t('settings.supportButton')}
                             </Text>
                         </TouchableOpacity>
 
@@ -722,7 +722,7 @@ export default function SettingsScreen() {
                             suppressHighlighting
                             className="text-center text-slate-400 text-xs mt-3"
                         >
-                            Cuida App Version 1.0.0
+                            {t('settings.version', { version: '1.0.0' })}
                         </Text>
                     </View>
                 </View>

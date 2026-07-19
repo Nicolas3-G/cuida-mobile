@@ -20,6 +20,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useLocalOrganizations } from '../hooks/useLocalOrganizations';
+import { useTranslation } from '../contexts/LanguageContext';
 
 
 const { width } = Dimensions.get('window');
@@ -114,6 +115,7 @@ const getOrgColorsForIcon = (iconName?: string | null) => {
 
 export default function VolunteerScreen() {
     const router = useRouter();
+    const { t } = useTranslation();
     const [step, setStep] = useState<'signup' | 'matches' | 'success'>('signup');
     const [formData, setFormData] = useState({ name: '', phone: '', zip: '' });
     const [sharingIds, setSharingIds] = useState<string[]>([]);
@@ -154,7 +156,7 @@ export default function VolunteerScreen() {
 
         if (!formData.name || !formData.phone || !isValidPhone(formData.phone)) {
             if (!isValidPhone(formData.phone)) {
-                setPhoneError('The phone number is not valid.');
+                setPhoneError(t('volunteer.phoneInvalid'));
             }
             return;
         }
@@ -232,7 +234,7 @@ export default function VolunteerScreen() {
                 ]}
             >
                 <View
-                    className="rounded-2xl border px-3.5 py-3 bg-white"
+                    className="min-h-[120px] rounded-2xl border px-3.5 py-3 bg-white"
                     style={{
                         borderColor: org.scopeColor,
                         backgroundColor: org.bg,
@@ -263,15 +265,16 @@ export default function VolunteerScreen() {
                     {org.desc && (
                         <Text
                             className="text-[11px] leading-[16px] text-[#5D4037] mb-3"
-                            numberOfLines={3}
+                            numberOfLines={2}
+                            ellipsizeMode="tail"
                         >
                             {org.desc}
                         </Text>
                     )}
 
-                    <View className="flex-row items-center justify-end">
+                    <View className="mt-auto flex-row items-center justify-end">
                         <Text className="text-[11px] font-semibold text-[#4E342E] mr-1.5">
-                            Learn more
+                            {t('volunteer.learnMore')}
                         </Text>
                         <MaterialCommunityIcons
                             name="chevron-right"
@@ -313,14 +316,13 @@ export default function VolunteerScreen() {
         return (
         <View className="w-full mt-10 mb-5">
             <Text className="text-[16px] font-bold text-[#4E342E] mb-4 text-left">
-                Places near you that need volunteers
+                {t('volunteer.nearbyTitle')}
             </Text>
 
             {!hasVolunteerOrgs ? (
                 <View className="rounded-[14px] border border-[#E5E7EB] bg-white px-4 py-3">
                     <Text className="text-[13px] leading-[18px] text-[#4B5563]">
-                        We couldn’t find any organizations near you that are actively looking for volunteers right now.
-                        Check back soon! We're always updating this list!
+                        {t('volunteer.nearbyEmpty')}
                     </Text>
                 </View>
             ) : (
@@ -349,16 +351,16 @@ export default function VolunteerScreen() {
 
         return (
             <View className="px-6 items-center">
-                <Text className="text-[28px] font-extrabold text-[#4E342E] text-center mb-3">Join the Network</Text>
+                <Text className="text-[28px] font-extrabold text-[#4E342E] text-center mb-3">{t('volunteer.joinTitle')}</Text>
                 <Text className="text-[15px] text-[#6D4C41] text-center leading-[22px] mb-8">
-                    Sign up to be part of the Cuida Volunteer Network. We'll match you with organizations in your area that need help.
+                    {t('volunteer.joinSubtitle')}
                 </Text>
 
                 {hasSignedUp && (
                     <View className="w-full rounded-[14px] border border-[#fde68a] bg-[#fef3c7] px-3.5 py-3.5 mb-6">
-                        <Text className="text-sm font-bold text-[#92400e] mb-1">You're already in the network!</Text>
+                        <Text className="text-sm font-bold text-[#92400e] mb-1">{t('volunteer.alreadyTitle')}</Text>
                         <Text className="text-[13px] leading-[18px] text-[#92400e]">
-                            You’ve already signed up, but you can sign up again if you want to update your info or add someone else :)
+                            {t('volunteer.alreadyBody')}
                         </Text>
                     </View>
                 )}
@@ -381,19 +383,19 @@ export default function VolunteerScreen() {
                         }}
                         pointerEvents={isCollapsed ? 'none' : 'auto'}
                     >
-                        <Text className="text-[13px] font-bold text-[#5D4037] mb-2 ml-1 uppercase">Full Name</Text>
+                        <Text className="text-[13px] font-bold text-[#5D4037] mb-2 ml-1 uppercase">{t('volunteer.fullName')}</Text>
                         <TextInput
                             className="bg-slate-50 border border-[#D7CCC8] rounded-xl px-4 py-4 text-base text-[#4E342E] mb-5"
-                            placeholder="Enter your name"
+                            placeholder={t('volunteer.namePlaceholder')}
                             placeholderTextColor="#94a3b8"
                             value={formData.name}
                             onChangeText={(text) => setFormData({ ...formData, name: text })}
                         />
 
-                        <Text className="text-[13px] font-bold text-[#5D4037] mb-2 ml-1 uppercase">Phone Number</Text>
+                        <Text className="text-[13px] font-bold text-[#5D4037] mb-2 ml-1 uppercase">{t('volunteer.phoneNumber')}</Text>
                         <TextInput
                             className="bg-slate-50 border border-[#D7CCC8] rounded-xl px-4 py-4 text-base text-[#4E342E] mb-2"
-                            placeholder="(555) 000-0000"
+                            placeholder={t('volunteer.phonePlaceholder')}
                             placeholderTextColor="#94a3b8"
                             keyboardType="phone-pad"
                             value={formData.phone}
@@ -410,10 +412,10 @@ export default function VolunteerScreen() {
                             </Text>
                         )}
 
-                        <Text className="text-[13px] font-bold text-[#5D4037] mb-2 ml-1 uppercase">Zip Code (Optional)</Text>
+                        <Text className="text-[13px] font-bold text-[#5D4037] mb-2 ml-1 uppercase">{t('volunteer.zipCode')}</Text>
                         <TextInput
                             className="bg-slate-50 border border-[#D7CCC8] rounded-xl px-4 py-4 text-base text-[#4E342E] mb-5"
-                            placeholder="e.g. 10001"
+                            placeholder={t('volunteer.zipPlaceholder')}
                             placeholderTextColor="#94a3b8"
                             keyboardType="number-pad"
                             value={formData.zip}
@@ -440,7 +442,7 @@ export default function VolunteerScreen() {
                             <ActivityIndicator color="#fff" />
                         ) : (
                             <Text className="text-white text-[16px] font-bold">
-                                {hasSignedUp ? 'Sign up anyway' : 'Sign Me Up'}
+                                {hasSignedUp ? t('volunteer.signUpAnyway') : t('volunteer.signMeUp')}
                             </Text>
                         )}
                     </TouchableOpacity>
@@ -448,7 +450,7 @@ export default function VolunteerScreen() {
 
                 <View className="flex-row items-center my-8 w-full">
                     <View className="flex-1 h-px bg-[#D7CCC8]" />
-                    <Text className="mx-4 text-[14px] font-bold text-[#8D6E63]">OR</Text>
+                    <Text className="mx-4 text-[14px] font-bold text-[#8D6E63]">{t('volunteer.or')}</Text>
                     <View className="flex-1 h-px bg-[#D7CCC8]" />
                 </View>
 
@@ -518,7 +520,7 @@ export default function VolunteerScreen() {
                         elevation: 4,
                     }}
                 >
-                    <Text className="text-white text-[16px] font-bold">I'm Done</Text>
+                    <Text className="text-white text-[16px] font-bold">I&apos;m Done</Text>
                 </TouchableOpacity>
             )}
         </Animated.View>
@@ -529,9 +531,9 @@ export default function VolunteerScreen() {
             <View className="w-[100px] h-[100px] rounded-full bg-[#f0fdf4] mb-6 justify-center items-center">
                 <MaterialCommunityIcons name="party-popper" size={60} color="#2E7D32" />
             </View>
-            <Text className="text-[28px] font-extrabold text-[#4E342E] text-center mb-3">You're in the Network!</Text>
+            <Text className="text-[28px] font-extrabold text-[#4E342E] text-center mb-3">{t('volunteer.successTitle')}</Text>
             <Text className="text-[15px] text-[#6D4C41] text-center leading-[22px] mb-8">
-                Thank you for stepping up. You're now part of the Cuida Volunteer Network, and organizations in your area will be able to reach out to you when help is needed. Want to start right away? Check out the places near you that need volunteers on the signup page.
+                {t('volunteer.successBody')}
             </Text>
 
             <TouchableOpacity
@@ -545,7 +547,7 @@ export default function VolunteerScreen() {
                     elevation: 4,
                 }}
             >
-                <Text className="text-white text-[16px] font-bold">Back to Home</Text>
+                <Text className="text-white text-[16px] font-bold">{t('volunteer.backToHome')}</Text>
             </TouchableOpacity>
         </View>
     );
@@ -563,7 +565,7 @@ export default function VolunteerScreen() {
                     >
                         <Ionicons name="chevron-back" size={24} color="#1e293b" />
                     </TouchableOpacity>
-                    <Text className="text-[17px] font-bold text-[#4E342E]">Volunteer Network</Text>
+                    <Text className="text-[17px] font-bold text-[#4E342E]">{t('volunteer.headerTitle')}</Text>
                     <View className="w-10" />
                 </View>
 

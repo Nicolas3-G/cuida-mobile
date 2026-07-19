@@ -16,9 +16,11 @@ import { useTargetingStatus } from '../hooks/useTargetingStatus';
 import { useNationTopics } from '../hooks/useNationTopics';
 import { useLocalEvents } from '../hooks/useLocalEvents';
 import { useLocalOrganizations } from '../hooks/useLocalOrganizations';
+import { useTranslation } from '../contexts/LanguageContext';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(true);
   const [stateCode, setStateCode] = useState<string | null>(null);
   const [savedLocation, setSavedLocation] = useState<string | null>(null);
@@ -65,7 +67,7 @@ export default function HomeScreen() {
         const location = await AsyncStorage.getItem('userLocation');
         setStateCode(code);
         setSavedLocation(location);
-        setUserState(location || code || 'your area');
+        setUserState(location || code || t('home.yourArea'));
         setIsCheckingOnboarding(false);
       } catch (error) {
         console.error('Error checking onboarding status:', error);
@@ -73,7 +75,7 @@ export default function HomeScreen() {
       }
     }
     checkOnboarding();
-  }, [router]);
+  }, [router, t]);
 
   // End the pull-to-refresh spinner only after a refresh actually started
   // loading and then finished (the loading flags flip on a later render).

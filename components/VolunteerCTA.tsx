@@ -1,12 +1,14 @@
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from '../contexts/LanguageContext';
 
 interface VolunteerCTAProps {
   onPress: () => void;
 }
 
 const VolunteerCTA = ({ onPress }: VolunteerCTAProps) => {
+  const { t } = useTranslation();
   return (
     <TouchableOpacity
       activeOpacity={0.85}
@@ -18,10 +20,10 @@ const VolunteerCTA = ({ onPress }: VolunteerCTAProps) => {
       </View>
       <View className="flex-1">
         <Text className="mb-1 text-[16px] font-bold text-white">
-          Volunteer
+          {t('home.volunteerTitle')}
         </Text>
         <Text className="text-[13px] leading-[18px] text-[#A5D6A7]">
-          Find organizations that need help or join our list to be contacted!
+          {t('home.volunteerSubtitle')}
         </Text>
       </View>
       <Text className="ml-2 text-[20px] text-[#A5D6A7]">›</Text>

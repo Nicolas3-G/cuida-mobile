@@ -1,6 +1,7 @@
 import React from 'react';
 import { Modal, ScrollView, Text, TouchableOpacity, View, Linking } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from '../contexts/LanguageContext';
 
 interface Article {
   title: string;
@@ -23,6 +24,7 @@ interface ArticlesListModalProps {
 }
 
 const ArticlesListModal = ({ visible, onClose, snippet, triggerHaptic }: ArticlesListModalProps) => {
+  const { t } = useTranslation();
   return (
     <Modal
       animationType="slide"
@@ -35,7 +37,7 @@ const ArticlesListModal = ({ visible, onClose, snippet, triggerHaptic }: Article
           <View className="my-3 h-1.5 w-10 self-center rounded-[3px] bg-[#D7CCC8]" />
 
           <View className="mb-5 flex-row items-center justify-between">
-            <Text className="text-[20px] font-extrabold text-[#4E342E]">Related Articles</Text>
+            <Text className="text-[20px] font-extrabold text-[#4E342E]">{t('articles.relatedArticles')}</Text>
             <TouchableOpacity
               onPress={onClose}
               className="h-8 w-8 items-center justify-center rounded-full bg-slate-200"
@@ -67,7 +69,7 @@ const ArticlesListModal = ({ visible, onClose, snippet, triggerHaptic }: Article
                     }}
                     className="flex-row items-center"
                   >
-                    <Text className="text-[13px] font-semibold text-[#E65100]">Read full coverage</Text>
+                    <Text className="text-[13px] font-semibold text-[#E65100]">{t('articles.readFullCoverage')}</Text>
                     <Text className="ml-1 text-[16px] text-[#E65100]">›</Text>
                   </TouchableOpacity>
                 </View>
@@ -81,7 +83,7 @@ const ArticlesListModal = ({ visible, onClose, snippet, triggerHaptic }: Article
                     color="#6D4C41"
                   />
                 </View>
-                <Text className="text-sm text-[#6D4C41]">No specific articles found for this snippet.</Text>
+                <Text className="text-sm text-[#6D4C41]">{t('articles.noArticles')}</Text>
               </View>
             )}
           </ScrollView>

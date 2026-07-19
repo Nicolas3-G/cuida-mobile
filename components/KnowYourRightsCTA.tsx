@@ -1,12 +1,14 @@
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from '../contexts/LanguageContext';
 
 interface KnowYourRightsCTAProps {
   onPress: () => void;
 }
 
 const KnowYourRightsCTA = ({ onPress }: KnowYourRightsCTAProps) => {
+  const { t } = useTranslation();
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -18,10 +20,10 @@ const KnowYourRightsCTA = ({ onPress }: KnowYourRightsCTAProps) => {
       </View>
       <View className="flex-1">
         <Text className="mb-1 text-[16px] font-bold text-white">
-          Know Your Rights
+          {t('home.knowYourRightsTitle')}
         </Text>
         <Text className="text-[13px] leading-[18px] text-[#CE93D8]">
-          Tap here to learn what to do when confronted by immigration officials.
+          {t('home.knowYourRightsSubtitle')}
         </Text>
       </View>
       <Text className="ml-2 text-[20px] text-[#CE93D8]">›</Text>

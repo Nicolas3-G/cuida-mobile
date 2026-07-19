@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { STATE_CITIES, IS_ALPHA_RELEASE, SUPPORTED_CITIES } from '../../constants/stateCities';
 import * as Location from 'expo-location';
+import { useTranslation } from '../../contexts/LanguageContext';
 
 const US_STATES = [
     { name: 'Alabama', code: 'AL' }, { name: 'Alaska', code: 'AK' }, { name: 'Arizona', code: 'AZ' },
@@ -28,6 +29,7 @@ const US_STATES = [
 
 export default function LocationScreen() {
     const router = useRouter();
+    const { t } = useTranslation();
     const [location, setLocation] = useState('');
     const [selectedStateCode, setSelectedStateCode] = useState('');
     const [selectedCity, setSelectedCity] = useState('');
@@ -92,8 +94,8 @@ export default function LocationScreen() {
             const { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
                 Alert.alert(
-                    'Location permission required',
-                    'Please enable location access to use this feature.'
+                    t('onboarding.locationPermissionTitle'),
+                    t('onboarding.locationPermissionBody')
                 );
                 setIsLocating(false);
                 return;
@@ -106,7 +108,7 @@ export default function LocationScreen() {
             });
 
             if (!results.length) {
-                Alert.alert('Unable to detect location', 'Please try again or enter your state manually.');
+                Alert.alert(t('onboarding.locationDetectFailTitle'), t('onboarding.locationDetectFailBody'));
                 setIsLocating(false);
                 return;
             }
@@ -140,8 +142,8 @@ export default function LocationScreen() {
 
             if (!matchedState) {
                 Alert.alert(
-                    'Unable to detect state',
-                    'We could not match your state. Please enter it manually.'
+                    t('onboarding.stateDetectFailTitle'),
+                    t('onboarding.stateDetectFailBody')
                 );
                 setIsLocating(false);
                 return;
@@ -163,7 +165,7 @@ export default function LocationScreen() {
             }
         } catch (error) {
             console.error('Error using current location:', error);
-            Alert.alert('Error', 'Something went wrong while detecting your location.');
+            Alert.alert(t('onboarding.locationErrorTitle'), t('onboarding.locationErrorBody'));
         } finally {
             setIsLocating(false);
         }
@@ -206,29 +208,29 @@ export default function LocationScreen() {
                         <Ionicons name="chevron-back" size={24} color="#4E342E" />
                     </TouchableOpacity>
                     <Text className="text-xl font-bold text-[#4E342E]">
-                        Back to Language
+                        {t('onboarding.backToLanguage')}
                     </Text>
                 </View>
 
                 {/* Main Content */}
                 <View className="mb-10 items-center">
                     <Text className="mb-3 text-center text-[32px] font-extrabold text-[#4E342E]">
-                        Set Your Location
+                        {t('onboarding.setLocationTitle')}
                     </Text>
                     <Text className="px-4 text-center text-base text-slate-600">
-                        Cuida relies on your location to provide relevant alerts and resources. (US Only)
+                        {t('onboarding.setLocationSubtitle')}
                     </Text>
                     {IS_ALPHA_RELEASE && (
                         <View className="mt-3 rounded-2xl border border-[#FFF59D] bg-[#FFF9C4] px-4 py-2.5">
                             <Text className="text-center text-[13px] leading-[19px] text-[#8D6E00]">
-                                During early access, city-level alerts are available in {SUPPORTED_CITIES.length} cities:{' '}
+                                {t('onboarding.earlyAccessHintPrefix', { count: SUPPORTED_CITIES.length })}
                                 {SUPPORTED_CITIES.map((city, i) => (
                                     <React.Fragment key={city}>
                                         <Text className="font-bold">{city}</Text>
-                                        {i < SUPPORTED_CITIES.length - 2 ? ', ' : i === SUPPORTED_CITIES.length - 2 ? ' and ' : ''}
+                                        {i < SUPPORTED_CITIES.length - 2 ? ', ' : i === SUPPORTED_CITIES.length - 2 ? ` ${t('common.and')} ` : ''}
                                     </React.Fragment>
                                 ))}
-                                . Everywhere else gets state-level coverage.
+                                {t('onboarding.earlyAccessHintSuffix')}
                             </Text>
                         </View>
                     )}
@@ -237,11 +239,11 @@ export default function LocationScreen() {
                 {/* Input Area */}
                 <View className="relative z-50 mb-2">
                     <Text className="mb-2 ml-1 text-[13px] font-bold uppercase tracking-wide text-slate-600">
-                        US State
+                        {t('onboarding.usStateLabel')}
                     </Text>
                     <TextInput
                         className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-[18px] text-[18px] text-slate-800"
-                        placeholder="Type your state (e.g. California)"
+                        placeholder={t('onboarding.statePlaceholder')}
                         placeholderTextColor="#94a3b8"
                         value={location}
                         onChangeText={handleInputChange}
@@ -262,7 +264,7 @@ export default function LocationScreen() {
                                     <Ionicons name="locate-outline" size={18} color="#475569" />
                                 </View>
                                 <Text className="text-sm font-semibold text-slate-600">
-                                    Use my location
+                                    {t('onboarding.useMyLocation')}
                                 </Text>
                             </>
                         )}
@@ -271,7 +273,7 @@ export default function LocationScreen() {
                     {/* Unresolved text: explain why Finish is disabled */}
                     {location.trim().length > 0 && !resolvedStateCode && !showSuggestions && (
                         <Text className="mt-2 ml-1 text-[13px] text-slate-500">
-                            Select a US state from the list to continue.
+                            {t('onboarding.selectStateHint')}
                         </Text>
                     )}
 
@@ -297,15 +299,15 @@ export default function LocationScreen() {
                 {resolvedStateCode && resolvedStateCities.length === 0 && (
                     <View className="mb-4">
                         <Text className="mb-2 ml-1 text-[13px] font-bold uppercase tracking-wide text-slate-600">
-                            Your selection
+                            {t('onboarding.yourSelection')}
                         </Text>
                         <View className="self-start rounded-full border border-orange-600 bg-orange-50 py-2 px-3.5">
                             <Text className="text-sm font-semibold text-orange-900">
-                                {resolvedStateName} — state-level alerts
+                                {t('onboarding.stateLevelAlertsChip', { state: resolvedStateName })}
                             </Text>
                         </View>
                         <Text className="mt-2 ml-1 text-[13px] text-slate-500">
-                            No city-level coverage in {resolvedStateName} yet.
+                            {t('onboarding.noCityCoverage', { state: resolvedStateName })}
                         </Text>
                     </View>
                 )}
@@ -315,7 +317,7 @@ export default function LocationScreen() {
                     <View className="mb-4">
                         <View className="mb-2 ml-1 flex-row items-center justify-start gap-1.5">
                             <Text className="text-[13px] font-bold uppercase tracking-wide text-slate-600">
-                                City options
+                                {t('onboarding.cityOptions')}
                             </Text>
                             <TouchableOpacity
                                 onPress={() => setShowCityInfo(prev => !prev)}
@@ -328,8 +330,7 @@ export default function LocationScreen() {
                         {showCityInfo && (
                             <View className="mx-0.5 mb-2.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
                                 <Text className="text-[13px] text-slate-500">
-                                    We currently only support these cities. If you prefer state-wide data,
-                                    you can choose &quot;State level only&quot; instead.
+                                    {t('onboarding.cityInfoText')}
                                 </Text>
                             </View>
                         )}
@@ -366,7 +367,7 @@ export default function LocationScreen() {
                             <Text
                                 className={`text-sm font-semibold ${stateLevelOnly ? 'text-orange-900' : 'text-slate-600'}`}
                             >
-                                State level only
+                                {t('onboarding.stateLevelOnly')}
                             </Text>
                         </TouchableOpacity>
                     </View>
@@ -396,7 +397,7 @@ export default function LocationScreen() {
                             <ActivityIndicator color="#fff" />
                         ) : (
                             <Text className="text-[18px] font-bold text-white">
-                                Finish Setup
+                                {t('onboarding.finishSetup')}
                             </Text>
                         )}
                     </TouchableOpacity>

@@ -4,9 +4,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
+import { useTranslation } from '../contexts/LanguageContext';
 
 export default function FeedbackScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [feedbackType, setFeedbackType] = useState<'idea' | 'bug' | 'other' | null>(null);
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
@@ -36,11 +38,11 @@ export default function FeedbackScreen() {
       });
 
       Alert.alert(
-        'Thank you!',
-        'Your feedback was sent.',
+        t('feedback.successTitle'),
+        t('feedback.successBody'),
         [
           {
-            text: 'OK',
+            text: t('feedback.ok'),
             onPress: () => router.back(),
           },
         ],
@@ -48,7 +50,7 @@ export default function FeedbackScreen() {
       );
     } catch (error) {
       console.error('Error submitting feedback:', error);
-      Alert.alert('Could not send feedback', 'Please try again in a moment.');
+      Alert.alert(t('feedback.errorTitle'), t('feedback.errorBody'));
     } finally {
       setIsSubmitting(false);
     }
@@ -64,7 +66,7 @@ export default function FeedbackScreen() {
           <View className="mb-4">
             <View className="relative items-center justify-center">
               <Text className="text-2xl font-extrabold text-slate-800 text-center">
-                Send feedback
+                {t('feedback.title')}
               </Text>
               <TouchableOpacity
                 onPress={() => router.back()}
@@ -78,17 +80,17 @@ export default function FeedbackScreen() {
 
           <ScrollView className="flex-1" contentContainerClassName="pb-10" keyboardShouldPersistTaps="handled">
             <Text className="text-sm text-slate-600 mb-4">
-              Cuida is still in its early days. Share ideas, bugs, or anything that would make it more useful for you and your community.
+              {t('feedback.intro')}
             </Text>
 
             <Text className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">
-              Type of feedback
+              {t('feedback.typeLabel')}
             </Text>
             <View className="flex-row mb-5">
               {[
-                { key: 'idea', label: 'Idea' },
-                { key: 'bug', label: 'Bug' },
-                { key: 'other', label: 'Other' },
+                { key: 'idea', label: t('feedback.typeIdea') },
+                { key: 'bug', label: t('feedback.typeBug') },
+                { key: 'other', label: t('feedback.typeOther') },
               ].map(({ key, label }) => {
                 const selected = feedbackType === key;
                 return (
@@ -113,7 +115,7 @@ export default function FeedbackScreen() {
             </View>
 
             <Text className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">
-              Rate your experience (optional)
+              {t('feedback.ratingLabel')}
             </Text>
             <View className="flex-row items-center mb-5">
               {[1, 2, 3, 4, 5].map((star) => {
@@ -136,22 +138,22 @@ export default function FeedbackScreen() {
             </View>
 
             <Text className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">
-              Subject (optional)
+              {t('feedback.subjectLabel')}
             </Text>
             <TextInput
               className="w-full bg-white rounded-xl px-4 py-3 text-base text-slate-800 border border-slate-200 mb-5"
-              placeholder="Short summary (e.g. “Bug in volunteer signup”)"
+              placeholder={t('feedback.subjectPlaceholder')}
               placeholderTextColor="#94a3b8"
               value={subject}
               onChangeText={setSubject}
             />
 
             <Text className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">
-              What’s going on?
+              {t('feedback.messageLabel')}
             </Text>
             <TextInput
               className="w-full bg-white rounded-xl px-4 py-3 text-base text-slate-800 border border-slate-200"
-              placeholder="Tell me what happened, what you were trying to do, or what you’d love Cuida to do."
+              placeholder={t('feedback.messagePlaceholder')}
               placeholderTextColor="#94a3b8"
               value={message}
               onChangeText={setMessage}
@@ -171,7 +173,7 @@ export default function FeedbackScreen() {
               }`}
             >
               <Text className="text-white text-[15px] font-bold">
-                {isSubmitting ? 'Sending…' : 'Send feedback'}
+                {isSubmitting ? t('feedback.sending') : t('feedback.submit')}
               </Text>
             </TouchableOpacity>
           </View>

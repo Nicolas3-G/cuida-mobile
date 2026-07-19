@@ -1,6 +1,7 @@
 import React, { type MutableRefObject } from 'react';
 import { ScrollView, Text, View, ActivityIndicator, TouchableOpacity, Linking } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from '../contexts/LanguageContext';
 
 interface Organization {
   id?: string;
@@ -27,12 +28,13 @@ const OrganizationsSection = ({
   lastOrgIndex,
   triggerSelectionHaptic,
 }: OrganizationsSectionProps) => {
+  const { t } = useTranslation();
   const ORG_CARD_WIDTH = 202; // 190 + 12 gap
 
   return (
     <View className="mb-5">
       <Text className="mb-3 px-5 text-[18px] font-bold text-[#4E342E]">
-        Organizations
+        {t('home.organizations')}
       </Text>
       {isLoadingOrgs ? (
         <ActivityIndicator color="#C2185B" className="my-2.5" />
@@ -56,9 +58,9 @@ const OrganizationsSection = ({
               {
                 icon: 'bank-outline',
                 name: 'ACLU',
-                scope: 'Nationwide',
+                scope: t('orgs.nationwide'),
                 scopeColor: '#BF360C',
-                desc: 'Defends civil liberties and fights immigration rights abuses in court.',
+                desc: t('orgs.acluDesc'),
                 bg: '#FBE9E7',
                 border: '#FFCCBC',
                 url: 'https://www.aclu.org/',
@@ -66,9 +68,9 @@ const OrganizationsSection = ({
               {
                 icon: 'scale-balance',
                 name: 'NILC',
-                scope: 'Nationwide',
+                scope: t('orgs.nationwide'),
                 scopeColor: '#BF360C',
-                desc: 'National Immigration Law Center — policy & legal defense for immigrants.',
+                desc: t('orgs.nilcDesc'),
                 bg: '#FBE9E7',
                 border: '#FFCCBC',
                 url: 'https://www.nilc.org/',
@@ -76,9 +78,9 @@ const OrganizationsSection = ({
               {
                 icon: 'handshake-outline',
                 name: 'UnidosUS',
-                scope: 'Nationwide',
+                scope: t('orgs.nationwide'),
                 scopeColor: '#BF360C',
-                desc: "The nation's largest Latino civil rights & advocacy organization.",
+                desc: t('orgs.unidosDesc'),
                 bg: '#FBE9E7',
                 border: '#FFCCBC',
                 url: 'https://unidosus.org/',
@@ -86,9 +88,9 @@ const OrganizationsSection = ({
               {
                 icon: 'book-open-page-variant-outline',
                 name: 'ILRC',
-                scope: 'Nationwide',
+                scope: t('orgs.nationwide'),
                 scopeColor: '#BF360C',
-                desc: 'Immigrant Legal Resource Center — legal training & educational materials.',
+                desc: t('orgs.ilrcDesc'),
                 bg: '#FBE9E7',
                 border: '#FFCCBC',
                 url: 'https://www.ilrc.org/',

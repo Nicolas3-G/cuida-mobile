@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useMemo, useRef, useState, useEffect } from 'react';
 import {
     Dimensions,
     FlatList,
@@ -11,109 +11,28 @@ import {
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Linking } from 'react-native';
+import { useTranslation } from '../contexts/LanguageContext';
+import { kyrSlides as kyrSlidesEn, type KyrSlideContent } from '../locales/en';
+import { kyrSlides as kyrSlidesEs } from '../locales/es';
 
 const { width } = Dimensions.get('window');
 
-const SLIDES = [
-    {
-        id: '1',
-        icon: 'shield-outline',
-        title: 'You Have Rights',
-        color: '#C2185B',
-        points: [
-            'You have constitutional rights regardless of your immigration status.',
-            'These rights apply to everyone in the United States, citizen or not.',
-            'Knowing your rights before an encounter can protect you and your family.',
-        ],
-        subPoints: [
-            'You have the right to remain silent.',
-            'You have the right to an attorney.',
-            'You have the right against unreasonable searches and seizures.',
-            'You have the right to record interactions with law enforcement.',
-        ],
-    },
-    {
-        id: '2',
-        icon: 'comment-off-outline',
-        title: 'Right to Remain Silent',
-        color: '#6A1B9A',
-        points: [
-            'You have the right to remain silent. You do not have to answer questions about where you were born or how you entered the US.',
-            'Clearly state: "I am exercising my right to remain silent."',
-            'Do not lie to officials, silence is safer than a false statement.',
-        ],
-    },
-    {
-        id: '3',
-        icon: 'door-open',
-        title: 'If an Agent Comes to Your Door',
-        color: '#00897B',
-        points: [
-            'You do not have to open the door unless they have a signed judicial warrant.',
-            'Ask them to slide the warrant under the door or hold it to the window.',
-            'An ICE administrative warrant does NOT give them the right to enter your home.',
-        ],
-    },
-    {
-        id: '4',
-        icon: 'car-outline',
-        title: 'If You Are Stopped in Public',
-        color: '#2E7D32',
-        points: [
-            'Stay calm. Do not run or resist, even if you believe the stop is unlawful.',
-            'You can ask: "Am I free to go?" If yes, calmly walk away.',
-            'If detained, clearly say: "I do not consent to a search, and I do not wish to answer any questions."',
-        ],
-    },
-    {
-        id: '5',
-        icon: 'clipboard-text-outline',
-        title: 'If You Are Arrested',
-        color: '#E65100',
-        points: [
-            'Say clearly: "I want to speak to a lawyer.", do not answer any questions.',
-            'Do not sign any documents without speaking to an attorney first.',
-            'You have the right to ask that your consulate be notified.',
-            'A consular officer can help you get a lawyer, contact your family, and visit you in detention.'
-        ],
-    },
-    {
-        id: '6',
-        icon: 'account-heart-outline',
-        title: 'Protect Your Family',
-        color: '#C62828',
-        points: [
-            'Create a family safety plan and make sure everyone knows it.',
-            'Designate a trusted person who can care for your children if you are detained.',
-            'Keep an emergency contact card with your immigration attorney\'s phone number.',
-            'Share this brief course with your family members.',
-        ],
-    },
-    {
-        id: '7',
-        icon: 'library-outline',
-        title: 'Learn more',
-        color: '#AD1457',
-        points: [],
-        resources: [
-            {
-                name: 'National Immigration Law Center',
-                description: 'Offers guides, policy updates, legal assistance, and “know your rights” resources about immigration law & enforcement.',
-                url: 'https://www.nilc.org/',
-            },
-            {
-                name: 'ACLU: Know Your Rights',
-                description: 'Comprehensive know your rights information and other resources.',
-                url: 'https://www.aclu.org/know-your-rights',
-            },
-            {
-                name: 'Immigrant Legal Resource Center',
-                description: 'Provides immigration legal resources, training, and guides to help immigrants, lawyers, and community organizations.',
-                url: 'https://www.ilrc.org/',
-            },
-        ],
-    },
-];
+// Visual metadata per slide; the text content lives in the locale files and
+// is merged by index (both arrays must stay the same length/order).
+const SLIDE_META = [
+    { id: '1', icon: 'shield-outline', color: '#C2185B' },
+    { id: '2', icon: 'comment-off-outline', color: '#6A1B9A' },
+    { id: '3', icon: 'door-open', color: '#00897B' },
+    { id: '4', icon: 'car-outline', color: '#2E7D32' },
+    { id: '5', icon: 'clipboard-text-outline', color: '#E65100' },
+    { id: '6', icon: 'account-heart-outline', color: '#C62828' },
+    { id: '7', icon: 'library-outline', color: '#AD1457' },
+] as const;
+
+const SLIDES_CONTENT: Record<'en' | 'es', KyrSlideContent[]> = {
+    en: kyrSlidesEn,
+    es: kyrSlidesEs,
+};
 
 interface AnimatedSubPointsProps {
     subPoints: string[];
@@ -163,8 +82,14 @@ const AnimatedSubPoints = ({ subPoints }: AnimatedSubPointsProps) => {
 
 export default function KnowYourRightsScreen() {
     const router = useRouter();
+    const { t, language } = useTranslation();
     const listRef = useRef<FlatList>(null);
     const [currentIndex, setCurrentIndex] = useState(0);
+
+    const SLIDES = useMemo(() => {
+        const content = SLIDES_CONTENT[language] ?? SLIDES_CONTENT.en;
+        return SLIDE_META.map((meta, i) => ({ ...meta, ...content[i] }));
+    }, [language]);
 
     const goNext = () => {
         if (currentIndex < SLIDES.length - 1) {
@@ -224,7 +149,7 @@ export default function KnowYourRightsScreen() {
 
                         {/* Step label */}
                         <Text className="mb-2 text-xs font-bold uppercase tracking-widest text-[rgba(255,255,255,0.6)]">
-                            Step {SLIDES.indexOf(item) + 1} of {SLIDES.length}
+                            {t('kyr.step', { current: SLIDES.indexOf(item) + 1, total: SLIDES.length })}
                         </Text>
 
                         {/* Title */}
@@ -259,7 +184,7 @@ export default function KnowYourRightsScreen() {
                                                 onPress={() => Linking.openURL(res.url)}
                                                 className="rounded-md bg-white px-2.5 py-1"
                                             >
-                                                <Text className="text-[11px] font-bold" style={{ color: item.color }}>Website</Text>
+                                                <Text className="text-[11px] font-bold" style={{ color: item.color }}>{t('kyr.website')}</Text>
                                             </TouchableOpacity>
                                         </View>
                                         <Text className="text-xs leading-[18px] text-[rgba(255,255,255,0.8)]">{res.description}</Text>
@@ -281,7 +206,7 @@ export default function KnowYourRightsScreen() {
                         onPress={goPrev}
                         className="flex-1 items-center rounded-[14px] bg-white/15 py-4"
                     >
-                        <Text className="text-[15px] font-bold text-white">← Back</Text>
+                        <Text className="text-[15px] font-bold text-white">{t('kyr.back')}</Text>
                     </TouchableOpacity>
                 )}
                 <TouchableOpacity
@@ -289,7 +214,7 @@ export default function KnowYourRightsScreen() {
                     className="flex-[2] items-center rounded-[14px] bg-white py-4"
                 >
                     <Text className="text-[15px] font-extrabold" style={{ color: slide.color }}>
-                        {currentIndex === SLIDES.length - 1 ? 'Done ✓' : 'Next →'}
+                        {currentIndex === SLIDES.length - 1 ? t('kyr.done') : t('kyr.next')}
                     </Text>
                 </TouchableOpacity>
             </View>

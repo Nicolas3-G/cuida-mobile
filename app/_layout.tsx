@@ -2,11 +2,12 @@ import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack, Link } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useState, useEffect } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import { AnimatedSplashScreen } from '../components/AnimatedSplashScreen';
+import { LanguageProvider } from '../contexts/LanguageContext';
 import '../global.css';
 
 // Keep the native splash screen showing while React Native warms up
@@ -47,6 +48,7 @@ export default function RootLayout() {
   }
 
   return (
+    <LanguageProvider>
     <ThemeProvider value={CuidaTheme}>
       <View className="flex-1">
         <Stack>
@@ -57,9 +59,16 @@ export default function RootLayout() {
               headerStyle: { backgroundColor: CuidaTheme.colors.background },
               headerShadowVisible: false,
               headerLeft: () => (
-                <Text className="ml-1 text-2xl font-bold text-[#E2725B]">
-                  Cuida
-                </Text>
+                <View className="ml-1 flex-row items-center">
+                  <Image
+                    source={require('../assets/images/cuida-logo-transparent.png')}
+                    style={{ width: 30, height: 30 }}
+                    resizeMode="contain"
+                  />
+                  <Text className="ml-1.5 text-2xl font-bold text-[#E2725B]">
+                    Cuida
+                  </Text>
+                </View>
               ),
               headerRight: () => (
                 <Link href="/settings" asChild>
@@ -113,5 +122,6 @@ export default function RootLayout() {
       </View>
       <StatusBar style="dark" backgroundColor="#ffffff" />
     </ThemeProvider>
+    </LanguageProvider>
   );
 }

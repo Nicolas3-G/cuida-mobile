@@ -2,26 +2,25 @@ import React from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation, type Language } from '../../contexts/LanguageContext';
 
-const LANGUAGES = [
+// Portuguese and Somali are planned but not yet translated — see IDEAS.md
+const LANGUAGES: { code: Language; label: string }[] = [
     { code: 'en', label: 'English' },
     { code: 'es', label: 'Español' },
-    { code: 'pt', label: 'Português' },
-    { code: 'so', label: 'Soomaali' },
 ];
 
 export default function OnboardingScreen() {
     const router = useRouter();
+    const { t, setLanguage } = useTranslation();
 
-    const handleLanguageSelect = async (code: string) => {
-        try {
-            await AsyncStorage.setItem('userLanguage', code);
-            // Navigate to the next onboarding step
-            router.push('/onboarding/location');
-        } catch (error) {
-            console.error('Error saving language selection:', error);
-        }
+    const handleLanguageSelect = (code: Language) => {
+        // Navigate first: setLanguage triggers a root re-render, and doing it before
+        // the push would drop the pending navigation (requiring a second tap).
+        router.push('/onboarding/location');
+        setLanguage(code).catch((error) =>
+            console.error('Error saving language selection:', error)
+        );
     };
 
     return (
@@ -34,10 +33,10 @@ export default function OnboardingScreen() {
                         <MaterialCommunityIcons name="earth" size={40} color="#BF360C" />
                     </View>
                     <Text className="mb-3 text-center text-[32px] font-extrabold text-[#4E342E]">
-                        Welcome to Cuida
+                        {t('onboarding.welcomeTitle')}
                     </Text>
                     <Text className="px-4 text-center text-base text-[#6D4C41]">
-                        To get started, please select your preferred language.
+                        {t('onboarding.welcomeSubtitle')}
                     </Text>
                 </View>
 
