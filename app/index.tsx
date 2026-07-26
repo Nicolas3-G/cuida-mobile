@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
-import GetOrganizedSection from '../components/GetOrganizedSection';
+import EventsSection from '../components/EventsSection';
 import OrganizationsSection from '../components/OrganizationsSection';
 import ArticlesListModal from '../components/ArticlesListModal';
 import VolunteerCTA from '../components/VolunteerCTA';
@@ -16,7 +16,9 @@ import { useTargetingStatus } from '../hooks/useTargetingStatus';
 import { useNationTopics } from '../hooks/useNationTopics';
 import { useLocalEvents } from '../hooks/useLocalEvents';
 import { useLocalOrganizations } from '../hooks/useLocalOrganizations';
+import { useStateOrganizations } from '../hooks/useStateOrganizations';
 import { useTranslation } from '../contexts/LanguageContext';
+import { SUPPORTED_CITIES } from '../constants/stateCities';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -30,10 +32,20 @@ export default function HomeScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { snippets, summaryArticles, allSummaryArticles, isLoading: isLoadingSnippets } = useSnippets(stateCode, savedLocation, refreshKey);
-  const { targetingStatus } = useTargetingStatus(savedLocation, refreshKey);
+  const { targetingStatus } = useTargetingStatus(savedLocation, stateCode, refreshKey);
   const { nationArticles, isLoading: isLoadingNation } = useNationTopics(refreshKey);
   const { events: localEvents, isLoading: isLoadingEvents } = useLocalEvents(savedLocation, refreshKey);
   const { organizations: localOrganizations, isLoading: isLoadingOrgs } = useLocalOrganizations(savedLocation, refreshKey);
+  const { organizations: stateOrganizations, isLoading: isLoadingStateOrgs } = useStateOrganizations(stateCode, refreshKey);
+
+  // State-level = no supported city selected (savedLocation holds the state name instead of a city).
+  const isStateLevel = !savedLocation || !SUPPORTED_CITIES.some(
+    (c) => c.toLowerCase() === savedLocation.trim().toLowerCase()
+  );
+
+  // State-level users see curated statewide orgs; city users see local ones.
+  const orgsForSection = isStateLevel ? stateOrganizations : localOrganizations;
+  const orgsSectionLoading = isStateLevel ? isLoadingStateOrgs : isLoadingOrgs;
 
   const [expandedStoryIds, setExpandedStoryIds] = useState<Set<string>>(new Set());
   const [truncatableStoryIds, setTruncatableStoryIds] = useState<Set<string>>(new Set());
@@ -196,8 +208,8 @@ export default function HomeScreen() {
 
         {/* ── Organizations ── */}
         <OrganizationsSection
-          isLoadingOrgs={isLoadingOrgs}
-          localOrganizations={localOrganizations}
+          isLoadingOrgs={orgsSectionLoading}
+          localOrganizations={orgsForSection}
           lastOrgIndex={lastOrgIndex}
           triggerSelectionHaptic={triggerSelectionHaptic}
         />
@@ -206,11 +218,12 @@ export default function HomeScreen() {
         <VolunteerCTA onPress={() => router.push('/volunteer')} />
 
         {/* ── Get Organized ── */}
-        <GetOrganizedSection
+        <EventsSection
           isLoadingEvents={isLoadingEvents}
           localEvents={localEvents}
           lastEventIndex={lastEventIndex}
           triggerSelectionHaptic={triggerSelectionHaptic}
+          isStateLevel={isStateLevel}
         />
 
       </ScrollView>

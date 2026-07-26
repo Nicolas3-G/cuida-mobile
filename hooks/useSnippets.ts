@@ -74,7 +74,8 @@ export function useSnippets(stateCode: string | null, city: string | null, refre
           const snippetsRef = collection(db, 'stateSnippetObjects');
           const q = query(
             snippetsRef,
-            where('stateCode', '==', stateCode),
+            // Backend stores stateCode lowercase (e.g. "az"); normalize to match.
+            where('stateCode', '==', stateCode.toLowerCase()),
             orderBy('dateCreated', 'desc'),
             limit(1)
           );

@@ -56,6 +56,8 @@ export const en = {
     organizations: 'Organizations',
     eventsNearYou: 'Events Near You',
     eventsSubtitle: 'Protests & events happening near you',
+    eventsEmpty: 'No upcoming events found for your area. Check back soon.',
+    eventsStatePrompt: 'Choose a city to see the latest events near you.',
     knowYourRightsTitle: 'Know Your Rights',
     knowYourRightsSubtitle: 'Tap here to learn what to do when confronted by immigration officials.',
     volunteerTitle: 'Volunteer',

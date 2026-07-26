@@ -58,6 +58,8 @@ export const es: TranslationTree = {
     organizations: 'Organizaciones',
     eventsNearYou: 'Eventos cerca de ti',
     eventsSubtitle: 'Protestas y eventos cerca de ti',
+    eventsEmpty: 'No encontramos eventos próximos en tu zona. Vuelve pronto.',
+    eventsStatePrompt: 'Elige una ciudad para ver los eventos más recientes cerca de ti.',
     knowYourRightsTitle: 'Conoce tus derechos',
     knowYourRightsSubtitle: 'Toca aquí para aprender qué hacer si te confrontan agentes de inmigración.',
     volunteerTitle: 'Voluntariado',

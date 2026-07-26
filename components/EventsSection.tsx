@@ -3,19 +3,21 @@ import { ScrollView, Text, View, ActivityIndicator, TouchableOpacity, Linking } 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from '../contexts/LanguageContext';
 
-interface GetOrganizedSectionProps {
+interface EventsSectionProps {
   isLoadingEvents: boolean;
   localEvents: any[];
   lastEventIndex: MutableRefObject<number>;
   triggerSelectionHaptic: () => void;
+  isStateLevel: boolean;
 }
 
-const GetOrganizedSection = ({
+const EventsSection = ({
   isLoadingEvents,
   localEvents,
   lastEventIndex,
   triggerSelectionHaptic,
-}: GetOrganizedSectionProps) => {
+  isStateLevel,
+}: EventsSectionProps) => {
   const { t } = useTranslation();
   const EVENT_CARD_WIDTH = 222; // 210 + 12 gap
 
@@ -30,6 +32,12 @@ const GetOrganizedSection = ({
 
       {isLoadingEvents ? (
         <ActivityIndicator color="#C2185B" className="my-2.5" />
+      ) : localEvents.length === 0 ? (
+        <View className="mx-5 rounded-2xl border border-[#E5E7EB] bg-white px-4 py-5">
+          <Text className="text-center text-[13px] leading-[18px] text-[#6D4C41]">
+            {isStateLevel ? t('home.eventsStatePrompt') : t('home.eventsEmpty')}
+          </Text>
+        </View>
       ) : (
         <ScrollView
           horizontal
@@ -107,5 +115,5 @@ const GetOrganizedSection = ({
   );
 };
 
-export default GetOrganizedSection;
+export default EventsSection;
 

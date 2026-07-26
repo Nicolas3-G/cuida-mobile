@@ -2,7 +2,7 @@ import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack, Link } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useState, useEffect } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
@@ -12,6 +12,18 @@ import '../global.css';
 
 // Keep the native splash screen showing while React Native warms up
 SplashScreen.preventAutoHideAsync();
+
+// Disable OS font scaling so the device's "larger text" / Dynamic Type setting
+// can't break the app's fixed layout and typography.
+type FontScalable = { defaultProps?: { allowFontScaling?: boolean } };
+(Text as unknown as FontScalable).defaultProps = {
+  ...(Text as unknown as FontScalable).defaultProps,
+  allowFontScaling: false,
+};
+(TextInput as unknown as FontScalable).defaultProps = {
+  ...(TextInput as unknown as FontScalable).defaultProps,
+  allowFontScaling: false,
+};
 
 const CuidaTheme = {
   ...DefaultTheme,
