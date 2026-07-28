@@ -1,10 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
     View,
-    Text,
     ScrollView,
     TouchableOpacity,
-    TextInput,
     StyleSheet,
     SafeAreaView,
     Animated,
@@ -14,6 +12,7 @@ import {
     ActivityIndicator,
     Linking,
 } from 'react-native';
+import { Text, TextInput } from '../components/Text';
 import { useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';

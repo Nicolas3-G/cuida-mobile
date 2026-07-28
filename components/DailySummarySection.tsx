@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { ActivityIndicator, Text, View, Animated, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, View, Animated, TouchableOpacity } from 'react-native';
+import { Text } from './Text';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from '../contexts/LanguageContext';
 

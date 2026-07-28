@@ -8,6 +8,9 @@ module.exports = {
   presets: [require("nativewind/preset")],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['DMSans_400Regular'],
+      },
       colors: {
         cuida: {
           50: '#eff6ff',

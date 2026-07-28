@@ -1,5 +1,6 @@
 import React from 'react';
-import { Modal, ScrollView, Text, TouchableOpacity, View, Linking } from 'react-native';
+import { Modal, ScrollView, TouchableOpacity, View, Linking } from 'react-native';
+import { Text } from './Text';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from '../contexts/LanguageContext';
 

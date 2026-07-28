@@ -2,28 +2,25 @@ import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack, Link } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
-import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, TouchableOpacity, View } from 'react-native';
+import { Text } from '../components/Text';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useState, useEffect } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import { AnimatedSplashScreen } from '../components/AnimatedSplashScreen';
 import { LanguageProvider } from '../contexts/LanguageContext';
+import {
+  useFonts,
+  DMSans_400Regular,
+  DMSans_500Medium,
+  DMSans_600SemiBold,
+  DMSans_700Bold,
+  DMSans_800ExtraBold,
+} from '@expo-google-fonts/dm-sans';
 import '../global.css';
 
 // Keep the native splash screen showing while React Native warms up
 SplashScreen.preventAutoHideAsync();
-
-// Disable OS font scaling so the device's "larger text" / Dynamic Type setting
-// can't break the app's fixed layout and typography.
-type FontScalable = { defaultProps?: { allowFontScaling?: boolean } };
-(Text as unknown as FontScalable).defaultProps = {
-  ...(Text as unknown as FontScalable).defaultProps,
-  allowFontScaling: false,
-};
-(TextInput as unknown as FontScalable).defaultProps = {
-  ...(TextInput as unknown as FontScalable).defaultProps,
-  allowFontScaling: false,
-};
 
 const CuidaTheme = {
   ...DefaultTheme,
@@ -40,6 +37,13 @@ const CuidaTheme = {
 export default function RootLayout() {
   const [appIsReady, setAppIsReady] = useState(false);
   const [splashAnimationComplete, setSplashAnimationComplete] = useState(false);
+  const [fontsLoaded] = useFonts({
+    DMSans_400Regular,
+    DMSans_500Medium,
+    DMSans_600SemiBold,
+    DMSans_700Bold,
+    DMSans_800ExtraBold,
+  });
 
   useEffect(() => {
     async function prepare() {
@@ -55,7 +59,7 @@ export default function RootLayout() {
     prepare();
   }, []);
 
-  if (!appIsReady) {
+  if (!appIsReady || !fontsLoaded) {
     return null; // Return null so the native splash holds until we say so
   }
 

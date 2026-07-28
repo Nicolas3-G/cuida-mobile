@@ -1,5 +1,6 @@
 import React, { type MutableRefObject } from 'react';
-import { ScrollView, Text, View, ActivityIndicator, TouchableOpacity, Linking } from 'react-native';
+import { ScrollView, View, ActivityIndicator, TouchableOpacity, Linking } from 'react-native';
+import { Text } from './Text';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from '../contexts/LanguageContext';
 
