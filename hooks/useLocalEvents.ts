@@ -75,7 +75,17 @@ export function useLocalEvents(city: string | null, refreshKey: number = 0) {
         if (!querySnapshot.empty) {
           const data = querySnapshot.docs[0].data() as any;
           if (data.events && Array.isArray(data.events)) {
-            const mapped = data.events.map((event: any, index: number) => {
+            // Drop events whose date has already passed. dateISO is a strict
+            // YYYY-MM-DD string, so a lexicographic compare against today works.
+            // Keep events missing/invalid dateISO (older docs pre-dateISO) rather
+            // than hiding them — the next weekly run backfills the field.
+            const now = new Date();
+            const todayISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+            const isUpcoming = (e: any) => {
+              const iso = typeof e?.dateISO === "string" ? e.dateISO : "";
+              return !/^\d{4}-\d{2}-\d{2}$/.test(iso) || iso >= todayISO;
+            };
+            const mapped = data.events.filter(isUpcoming).map((event: any, index: number) => {
               const summary = event.summary || {};
               const title = event.shortName || event.name || "Community event";
               const date = event.date || "";
