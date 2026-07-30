@@ -1,8 +1,7 @@
-import React from 'react';
-import { View, TouchableOpacity, SafeAreaView } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { View, TouchableOpacity, SafeAreaView, Image } from 'react-native';
 import { Text } from '../../components/Text';
-import { useRouter } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useTranslation, type Language } from '../../contexts/LanguageContext';
 
 // Portuguese and Somali are planned but not yet translated — see IDEAS.md
@@ -14,14 +13,38 @@ const LANGUAGES: { code: Language; label: string }[] = [
 export default function OnboardingScreen() {
     const router = useRouter();
     const { t, setLanguage } = useTranslation();
+    // Starts empty on purpose — nothing is pre-selected, so the screen reads as
+    // "make a choice" rather than showing a default that was never picked.
+    const [selected, setSelected] = useState<Language | null>(null);
+    const navTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // Don't leave a pending navigation behind if the screen goes away first.
+    useEffect(
+        () => () => {
+            if (navTimer.current) clearTimeout(navTimer.current);
+        },
+        []
+    );
+
+    // Pushing to the next screen leaves this one mounted, so coming back would
+    // still have a language selected — and the in-flight guard below would then
+    // swallow every tap. Clear it whenever the screen regains focus.
+    useFocusEffect(
+        useCallback(() => {
+            setSelected(null);
+        }, [])
+    );
 
     const handleLanguageSelect = (code: Language) => {
-        // Navigate first: setLanguage triggers a root re-render, and doing it before
-        // the push would drop the pending navigation (requiring a second tap).
-        router.push('/onboarding/location');
+        if (selected) return; // a choice is already in flight; ignore extra taps
+        setSelected(code);
         setLanguage(code).catch((error) =>
             console.error('Error saving language selection:', error)
         );
+        // Brief pause so the filled radio registers before the screen changes.
+        // Navigating after the language state settles also avoids the race that
+        // used to drop the push and require a second tap.
+        navTimer.current = setTimeout(() => router.push('/onboarding/location'), 220);
     };
 
     return (
@@ -30,9 +53,11 @@ export default function OnboardingScreen() {
 
                 {/* Header content */}
                 <View className="mb-10 items-center">
-                    <View className="mb-6 h-20 w-20 items-center justify-center rounded-full bg-[#FBE9E7]">
-                        <MaterialCommunityIcons name="earth" size={40} color="#BF360C" />
-                    </View>
+                    <Image
+                        source={require('../../assets/images/cuida-logo-transparent.png')}
+                        style={{ width: 156, height: 156, marginBottom: 24 }}
+                        resizeMode="contain"
+                    />
                     <Text className="mb-3 text-center text-[32px] font-extrabold text-[#4E342E]">
                         {t('onboarding.welcomeTitle')}
                     </Text>
@@ -44,14 +69,27 @@ export default function OnboardingScreen() {
                 {/* Language Selection List */}
                 <View className="flex-1">
                     {LANGUAGES.map((lang) => {
+                        const isSelected = selected === lang.code;
                         return (
                             <TouchableOpacity
                                 key={lang.code}
                                 activeOpacity={0.7}
                                 onPress={() => handleLanguageSelect(lang.code)}
-                                className="mb-4 flex-row items-center rounded-2xl border border-[#D7CCC8] bg-[#fff6e8] p-5 shadow-md"
+                                className={`mb-4 flex-row items-center rounded-2xl border p-5 shadow-md ${
+                                    isSelected
+                                        ? 'border-[#E2725B] bg-[#FBE9E7]'
+                                        : 'border-[#D7CCC8] bg-[#fff6e8]'
+                                }`}
                             >
-                                <View className="mr-4 h-6 w-6 items-center justify-center rounded-full border-2 border-[#BCAAA4]" />
+                                <View
+                                    className={`mr-4 h-6 w-6 items-center justify-center rounded-full border-2 ${
+                                        isSelected ? 'border-[#E2725B]' : 'border-[#BCAAA4]'
+                                    }`}
+                                >
+                                    {isSelected && (
+                                        <View className="h-3 w-3 rounded-full bg-[#E2725B]" />
+                                    )}
+                                </View>
                                 <Text className="text-[18px] font-semibold text-[#4E342E]">
                                     {lang.label}
                                 </Text>

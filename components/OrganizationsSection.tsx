@@ -130,7 +130,12 @@ const OrganizationsSection = ({
                 <MaterialCommunityIcons name={org.icon as any} size={26} color={org.scopeColor} />
               </View>
               <Text className="mb-1.5 pr-[60px] text-[14px] font-bold text-[#4E342E]">{org.name}</Text>
-              <Text className="mb-2 text-[12px] leading-[17px] text-[#6D4C41]">{org.desc}</Text>
+              <Text
+                numberOfLines={3}
+                className="mb-2 text-[12px] leading-[17px] text-[#6D4C41]"
+              >
+                {org.desc}
+              </Text>
 
               <View className="absolute bottom-3 right-3">
                 <MaterialCommunityIcons name="chevron-right" size={18} color={org.scopeColor} />

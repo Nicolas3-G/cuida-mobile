@@ -79,7 +79,11 @@ export default function HomeScreen() {
         const location = await AsyncStorage.getItem('userLocation');
         setStateCode(code);
         setSavedLocation(location);
-        setUserState(location || code || t('home.yourArea'));
+        // Store the raw value only — the translated fallback is applied at render
+        // time. Calling t() here would put it in this effect's deps, and t is a new
+        // reference on every language change, which re-ran this effect mid-onboarding
+        // and bounced the user back to the first onboarding screen.
+        setUserState(location || code || '');
         setIsCheckingOnboarding(false);
       } catch (error) {
         console.error('Error checking onboarding status:', error);
@@ -87,7 +91,7 @@ export default function HomeScreen() {
       }
     }
     checkOnboarding();
-  }, [router, t]);
+  }, [router]);
 
   // End the pull-to-refresh spinner only after a refresh actually started
   // loading and then finished (the loading flags flip on a later render).
@@ -196,7 +200,7 @@ export default function HomeScreen() {
 
         {/* ── Daily Summary ── */}
         <DailySummarySection
-          userState={userState}
+          userState={userState || t('home.yourArea')}
           targetingStatus={targetingStatus}
           isLoadingSnippets={isLoadingSnippets}
           snippets={snippets}
