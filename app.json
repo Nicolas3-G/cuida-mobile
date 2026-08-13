@@ -31,6 +31,12 @@
     "plugins": [
       "expo-router",
       [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Cuida uses your location to determine your city and state so it can show immigration news, enforcement alerts, and local organizations relevant to you. For example, if you are in Chicago, you will see Chicago immigration updates and nearby legal aid organizations instead of national news."
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "image": "./assets/images/cuida-splash-icon.png",
